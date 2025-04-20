@@ -1,7 +1,11 @@
-import React, { createContext, useContext, useEffect } from 'react';
+
+import React, { createContext, useContext } from 'react';
 import { GameContextType } from './types';
 import { useGameState } from './useGameState';
 import { useGameActions } from './hooks/useGameActions';
+import { useGameTimer } from './hooks/useGameTimer';
+import { usePlayerMovement } from './hooks/usePlayerMovement';
+import { useWallet } from './hooks/useWallet';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -35,9 +39,22 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     startPlayPhase,
     handleGameOver,
     defaultGameState,
-    newRound,
     toast
   } = useGameState();
+
+  const { movePlayer, movePlayerToCell } = usePlayerMovement({
+    gameState,
+    player,
+    maze,
+    gridCells,
+    treasures,
+    exitCell,
+    setPlayer,
+    setGameState,
+    setTreasures,
+    handleGameOver,
+    toast
+  });
 
   const { onCellClick } = useGameActions({
     gameState,
@@ -50,58 +67,26 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     toast
   });
 
-  useEffect(() => {
-    if (gameState.gameOver) return;
+  useGameTimer({
+    gameState,
+    startPlayPhase,
+    handleGameOver,
+    setGameState
+  });
 
-    const timer = setInterval(() => {
-      const now = Date.now();
-      const elapsed = Math.floor((now - gameState.startTime) / 1000);
-      const phaseTime = gameState.phase === 'claim' ? 10 : 300;
-      const remaining = Math.max(0, phaseTime - elapsed);
-      
-      setGameState(prev => ({
-        ...prev,
-        timeRemaining: remaining
-      }));
-      
-      if (remaining <= 0) {
-        if (gameState.phase === 'claim') {
-          startPlayPhase();
-        } else {
-          handleGameOver();
-        }
-      }
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, [gameState.phase, gameState.startTime, gameState.gameOver, startPlayPhase, handleGameOver]);
+  const { connectWallet, buyPgl } = useWallet({
+    isWalletConnected,
+    setIsWalletConnected,
+    setGameState,
+    toast
+  });
 
-  const initializeGame = () => {
-    setGameState({
-      ...defaultGameState,
-      startTime: Date.now()
-    });
-    
-    setGridCells(Array(15).fill(null).map(() => 
-      Array(15).fill(null).map(() => ({ owner: null, nickname: "" }))
-    ));
-    
-    setMaze([]);
-    setPlayer(null);
-    setTreasures([]);
-    setExitCell(null);
-    setHintPaths([]);
-    setClaimTarget(null);
-    
-    if (!localStorage.getItem('tutorialShown')) {
-      setActiveModal('tutorial');
-      localStorage.setItem('tutorialShown', 'true');
-    }
-    
-    toast({
-      title: "Game Initialized",
-      description: "Claim your cells before time runs out!",
-    });
+  const toggleMenu = () => {
+    setIsMenuOpen(prev => !prev);
+  };
+
+  const showModal = (modalName: string | null) => {
+    setActiveModal(modalName);
   };
 
   const showHint = () => {
@@ -145,260 +130,6 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     });
   };
 
-  const movePlayerToCell = (col: number, row: number) => {
-    const cell = gridCells[row][col];
-    if (cell.owner && cell.owner !== gameState.playerAccount) {
-      if (gameState.walletBalance < 5) {
-        toast({
-          title: "Insufficient Funds",
-          description: "You need 5 Pgl to park on someone else's cell.",
-        });
-        return;
-      }
-      
-      setGameState(prev => ({
-        ...prev,
-        walletBalance: prev.walletBalance - 5,
-        totalLoss: prev.totalLoss + 5
-      }));
-      
-      toast({
-        title: "Parking Fee Paid",
-        description: `You paid 5 Pgl to ${cell.nickname}.`,
-      });
-    }
-    
-    const treasure = treasures.find(t => t.col === col && t.row === row && !t.collected);
-    if (treasure) {
-      setTreasures(prev => prev.map(t => 
-        t.col === col && t.row === row ? { ...t, collected: true } : t
-      ));
-      
-      setGameState(prev => ({
-        ...prev,
-        walletBalance: prev.walletBalance + treasure.value,
-        score: prev.score + treasure.value,
-        totalProfit: prev.totalProfit + treasure.value
-      }));
-      
-      toast({
-        title: "Treasure Found!",
-        description: `You found ${treasure.value} Pgl!`,
-      });
-    }
-    
-    if (exitCell && col === exitCell.col && row === exitCell.row) {
-      const timeBonus = Math.floor(gameState.timeRemaining * 0.5);
-      
-      setGameState(prev => ({
-        ...prev,
-        score: prev.score + timeBonus,
-        totalProfit: prev.totalProfit + timeBonus
-      }));
-      
-      toast({
-        title: "Exit Reached!",
-        description: `Time bonus: ${timeBonus} points!`,
-      });
-      
-      handleGameOver();
-      return;
-    }
-    
-    setPlayer({ col, row });
-  };
-
-  const movePlayer = (direction: 'up' | 'down' | 'left' | 'right') => {
-    if (gameState.phase !== 'play' || !player) return;
-    
-    let newCol = player.col;
-    let newRow = player.row;
-    
-    switch (direction) {
-      case 'up':
-        newRow = Math.max(0, player.row - 1);
-        break;
-      case 'down':
-        newRow = Math.min(14, player.row + 1);
-        break;
-      case 'left':
-        newCol = Math.max(0, player.col - 1);
-        break;
-      case 'right':
-        newCol = Math.min(14, player.col + 1);
-        break;
-    }
-    
-    if (newCol !== player.col || newRow !== player.row) {
-      const currentCell = maze.find(cell => cell.col === player.col && cell.row === player.row);
-      if (!currentCell) return;
-      
-      let canMove = true;
-      if (direction === 'up' && currentCell.walls.top) canMove = false;
-      if (direction === 'right' && currentCell.walls.right) canMove = false;
-      if (direction === 'down' && currentCell.walls.bottom) canMove = false;
-      if (direction === 'left' && currentCell.walls.left) canMove = false;
-      
-      if (canMove) {
-        movePlayerToCell(newCol, newRow);
-      }
-    }
-  };
-
-  const connectWallet = async (): Promise<boolean> => {
-    try {
-      toast({
-        title: "Connecting Wallet...",
-        description: "Please approve the connection request in your wallet.",
-      });
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setIsWalletConnected(true);
-      setGameState(prev => ({
-        ...prev,
-        playerWaxWallet: "waxwallet.example",
-        playerAccount: "example.wam"
-      }));
-      
-      toast({
-        title: "Wallet Connected",
-        description: "Successfully connected to your WAX wallet.",
-      });
-      
-      return true;
-    } catch (error) {
-      toast({
-        title: "Connection Failed",
-        description: "Could not connect to WAX wallet.",
-      });
-      return false;
-    }
-  };
-
-  const buyPgl = async (amount: number): Promise<boolean> => {
-    try {
-      if (!isWalletConnected) {
-        toast({
-          title: "Wallet Not Connected",
-          description: "Please connect your WAX wallet first.",
-        });
-        return false;
-      }
-      
-      toast({
-        title: "Processing Transaction...",
-        description: `Sending ${amount} WAX to buy ${amount * 100} Pgl`,
-      });
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setGameState(prev => ({
-        ...prev,
-        walletBalance: prev.walletBalance + (amount * 100)
-      }));
-      
-      toast({
-        title: "Transaction Complete",
-        description: `Successfully purchased ${amount * 100} Pgl!`,
-      });
-      
-      return true;
-    } catch (error) {
-      toast({
-        title: "Transaction Failed",
-        description: "Could not complete the Pgl purchase.",
-      });
-      return false;
-    }
-  };
-
-  const toggleMenu = () => {
-    setIsMenuOpen(prev => !prev);
-  };
-
-  const showModal = (modalName: string | null) => {
-    setActiveModal(modalName);
-  };
-
-  const claimCell = async (nickname: string, initials: string, col: number, row: number): Promise<boolean> => {
-    if (!claimTarget) return false;
-    
-    try {
-      const { col, row } = claimTarget;
-      
-      const isCorner = (row === 0 || row === 14) && (col === 0 || col === 14);
-      const cost = isCorner ? 20 : 5;
-      
-      if (gameState.walletBalance < cost) {
-        toast({
-          title: "Insufficient Funds",
-          description: `You need ${cost} Pgl to claim this cell.`,
-        });
-        return false;
-      }
-      
-      setGameState(prev => ({
-        ...prev,
-        walletBalance: prev.walletBalance - cost,
-        totalLoss: prev.totalLoss + cost,
-        playerNickname: nickname,
-        playerClaimed: true
-      }));
-      
-      setGridCells(prev => {
-        const newGrid = [...prev];
-        newGrid[row][col] = {
-          owner: gameState.playerAccount || 'local-player',
-          nickname: initials
-        };
-        return newGrid;
-      });
-      
-      setClaimTarget(null);
-      setActiveModal(null);
-      
-      toast({
-        title: "Cell Claimed!",
-        description: `You've successfully claimed this cell for ${cost} Pgl.`,
-      });
-      
-      return true;
-    } catch (error) {
-      toast({
-        title: "Claim Failed",
-        description: "Could not claim the cell.",
-      });
-      return false;
-    }
-  };
-
-  useEffect(() => {
-    if (gameState.phase !== 'play') return;
-    
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (gameState.phase !== 'play' || !player) return;
-      
-      switch (e.key) {
-        case 'ArrowUp':
-          movePlayer('up');
-          break;
-        case 'ArrowDown':
-          movePlayer('down');
-          break;
-        case 'ArrowLeft':
-          movePlayer('left');
-          break;
-        case 'ArrowRight':
-          movePlayer('right');
-          break;
-      }
-    };
-    
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [gameState.phase, player]);
-
   return (
     <GameContext.Provider
       value={{
@@ -416,15 +147,109 @@ export const GameProvider = ({ children }: GameProviderProps) => {
         activeModal,
         claimTarget,
         onCellClick,
-        initializeGame,
+        initializeGame: () => {
+          setGameState({
+            ...defaultGameState,
+            startTime: Date.now()
+          });
+          setGridCells(Array(15).fill(null).map(() => 
+            Array(15).fill(null).map(() => ({ owner: null, nickname: "" }))
+          ));
+          setMaze([]);
+          setPlayer(null);
+          setTreasures([]);
+          setExitCell(null);
+          setHintPaths([]);
+          setClaimTarget(null);
+          if (!localStorage.getItem('tutorialShown')) {
+            setActiveModal('tutorial');
+            localStorage.setItem('tutorialShown', 'true');
+          }
+          toast({
+            title: "Game Initialized",
+            description: "Claim your cells before time runs out!",
+          });
+        },
         showHint,
-        newRound,
+        newRound: () => {
+          setGameState(prev => ({
+            ...defaultGameState,
+            highScore: prev.highScore,
+            walletBalance: prev.walletBalance,
+            playerAccount: prev.playerAccount,
+            playerWaxWallet: prev.playerWaxWallet,
+            startTime: Date.now()
+          }));
+          setGridCells(Array(15).fill(null).map(() => 
+            Array(15).fill(null).map(() => ({ owner: null, nickname: "" }))
+          ));
+          setMaze([]);
+          setPlayer(null);
+          setTreasures([]);
+          setExitCell(null);
+          setHintPaths([]);
+          setClaimTarget(null);
+          toast({
+            title: "New Round Started",
+            description: "Claim your cells before time runs out!",
+          });
+        },
         movePlayer,
         connectWallet,
         buyPgl,
         toggleMenu,
         showModal,
-        claimCell,
+        claimCell: async (nickname: string, initials: string) => {
+          if (!claimTarget) return false;
+          
+          try {
+            const { col, row } = claimTarget;
+            
+            const isCorner = (row === 0 || row === 14) && (col === 0 || col === 14);
+            const cost = isCorner ? 20 : 5;
+            
+            if (gameState.walletBalance < cost) {
+              toast({
+                title: "Insufficient Funds",
+                description: `You need ${cost} Pgl to claim this cell.`,
+              });
+              return false;
+            }
+            
+            setGameState(prev => ({
+              ...prev,
+              walletBalance: prev.walletBalance - cost,
+              totalLoss: prev.totalLoss + cost,
+              playerNickname: nickname,
+              playerClaimed: true
+            }));
+            
+            setGridCells(prev => {
+              const newGrid = [...prev];
+              newGrid[row][col] = {
+                owner: gameState.playerAccount || 'local-player',
+                nickname: initials
+              };
+              return newGrid;
+            });
+            
+            setClaimTarget(null);
+            setActiveModal(null);
+            
+            toast({
+              title: "Cell Claimed!",
+              description: `You've successfully claimed this cell for ${cost} Pgl.`,
+            });
+            
+            return true;
+          } catch (error) {
+            toast({
+              title: "Claim Failed",
+              description: "Could not claim the cell.",
+            });
+            return false;
+          }
+        },
       }}
     >
       {children}
@@ -433,3 +258,4 @@ export const GameProvider = ({ children }: GameProviderProps) => {
 };
 
 export default GameContext;
+
