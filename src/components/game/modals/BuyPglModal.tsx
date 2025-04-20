@@ -2,6 +2,7 @@
 import React from 'react';
 import { useGame } from '@/contexts/game/GameContext';
 import { Button } from '@/components/ui/button';
+import { ExternalLink } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -13,6 +14,10 @@ import {
 
 export const BuyPglModal = () => {
   const { gameState, showModal, buyPgl } = useGame();
+
+  const openAlcorExchange = () => {
+    window.open('https://alcor.exchange/', '_blank', 'noopener,noreferrer');
+  };
 
   return (
     <Dialog open={gameState.activeModal === 'buy'} onOpenChange={(open) => !open && showModal(null)}>
@@ -44,6 +49,14 @@ export const BuyPglModal = () => {
             >
               Buy 1000 Pgl (10 WAX)
             </Button>
+            <Button 
+              variant="outline"
+              onClick={openAlcorExchange}
+              className="border-gold text-gold hover:bg-gold/20 flex items-center justify-center"
+            >
+              <ExternalLink className="mr-2 h-4 w-4" />
+              Open Alcor Exchange
+            </Button>
           </div>
         </div>
         <DialogFooter>
@@ -59,3 +72,4 @@ export const BuyPglModal = () => {
     </Dialog>
   );
 };
+
