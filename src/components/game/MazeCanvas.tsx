@@ -8,7 +8,7 @@ interface MazeCanvasProps {
   treasures: Treasure[];
   exitCell: PlayerPosition | null;
   gridCells: GridCell[][];
-  hintPaths: [number, number][][]; // Fixed type definition here
+  hintPaths: number[][]; // Updated type definition
   onCellClick: (col: number, row: number) => void;
 }
 
@@ -63,7 +63,7 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
             ctx.fillStyle = "#FFD700";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText("✓", c * CELL_SIZE + CELL_SIZE / 2, r * CELL_SIZE + CELL_SIZE / 2);
+            ctx.fillText(cell.nickname || "✓", c * CELL_SIZE + CELL_SIZE / 2, r * CELL_SIZE + CELL_SIZE / 2);
           }
         });
       });
@@ -98,6 +98,14 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
           ctx.stroke();
         }
       });
+
+      // Draw hint paths
+      if (hintPaths.length > 0) {
+        ctx.fillStyle = "rgba(0,255,255,0.3)";
+        hintPaths.forEach(([col, row]) => {
+          ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+        });
+      }
 
       // Draw treasures
       treasures.forEach((t) => {
@@ -135,16 +143,6 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
           CELL_SIZE * 0.6,
           CELL_SIZE * 0.6
         );
-      }
-
-      // Draw hint paths
-      if (hintPaths.length > 0) {
-        ctx.fillStyle = "rgba(0,255,255,0.3)";
-        hintPaths.forEach((path) => {
-          path.forEach(([col, row]) => {
-            ctx.fillRect(col * CELL_SIZE, row * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-          });
-        });
       }
     };
 

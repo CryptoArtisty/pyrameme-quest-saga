@@ -31,11 +31,28 @@ export interface PlayerPosition {
 export interface GameState {
   phase: "claim" | "play";
   score: number;
+  highScore: number;
   walletBalance: number;
   totalProfit: number;
   totalLoss: number;
   playerNickname: string;
-  playerKemWallet: string;
+  playerWaxWallet: string;
+  playerAccount: string;
   playerClaimed: boolean;
   gameOver: boolean;
+  timeRemaining: number;
+  startTime: number;
+}
+
+export interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  unlocked: boolean;
+}
+
+export interface LeaderboardEntry {
+  account: string;
+  score: number;
+  timestamp: string;
 }
