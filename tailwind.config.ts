@@ -27,6 +27,7 @@ export default {
         "grid-line": "rgba(255,215,0,0.3)",
         "maze-wall": "#00ffff",
         "hint-color": "rgba(0,255,255,0.3)",
+        border: "rgba(255,215,0,0.5)", // Adding the missing border color
       },
       fontFamily: {
         medieval: ["MedievalSharp", "cursive"],
