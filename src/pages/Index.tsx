@@ -1,12 +1,12 @@
-
 import React, { useEffect } from 'react';
-import { GameProvider, useGame } from '@/contexts/GameContext';
+import { GameProvider, useGame } from '@/contexts/game/GameContext';
 import MazeCanvas from '@/components/game/MazeCanvas';
 import { Menu, LogIn } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/contexts/AuthProvider';
 import { ClaimModal } from '@/components/game/modals/ClaimModal';
 import { VictoryModal } from '@/components/game/modals/VictoryModal';
