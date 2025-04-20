@@ -110,6 +110,33 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profiles: {
+        Row: {
+          created_at: string | null
+          current_pgl: number | null
+          high_score: number | null
+          id: string
+          nickname: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          current_pgl?: number | null
+          high_score?: number | null
+          id: string
+          nickname?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          current_pgl?: number | null
+          high_score?: number | null
+          id?: string
+          nickname?: string | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       waitlist: {
         Row: {
           bid_amount: number | null

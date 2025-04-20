@@ -2,6 +2,23 @@ import React, { createContext, useContext, useState, ReactNode, useCallback, use
 import { Cell, PlayerPosition, Treasure, GridCell, GameState, Achievement, LeaderboardEntry } from '@/types/game';
 import { useToast } from "@/hooks/use-toast";
 
+interface GameState {
+  phase: "claim" | "play";
+  score: number;
+  highScore: number;
+  walletBalance: number;
+  totalProfit: number;
+  totalLoss: number;
+  playerNickname: string;
+  playerWaxWallet: string;
+  playerAccount: string;
+  playerClaimed: boolean;
+  gameOver: boolean;
+  timeRemaining: number;
+  startTime: number;
+  activeModal: string | null;
+}
+
 interface GameContextType {
   maze: Cell[];
   player: PlayerPosition | null;
@@ -41,6 +58,7 @@ const defaultGameState: GameState = {
   gameOver: false,
   timeRemaining: 10,
   startTime: Date.now(),
+  activeModal: null,
 };
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
