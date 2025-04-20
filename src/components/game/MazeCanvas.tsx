@@ -8,7 +8,7 @@ interface MazeCanvasProps {
   treasures: Treasure[];
   exitCell: PlayerPosition | null;
   gridCells: GridCell[][];
-  hintPaths: number[][];
+  hintPaths: [number, number][][]; // Fixed type definition here
   onCellClick: (col: number, row: number) => void;
 }
 

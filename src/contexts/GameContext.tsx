@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { Cell, PlayerPosition, Treasure, GridCell, GameState } from '@/types/game';
 
 interface GameContextType {
@@ -56,10 +56,20 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     console.log(`Cell clicked: ${col}, ${row}`);
   };
 
-  const initializeGame = () => {
+  const initializeGame = useCallback(() => {
+    // Initialize empty grid cells
+    const initGridCells: GridCell[][] = [];
+    for (let r = 0; r < 15; r++) {
+      initGridCells[r] = [];
+      for (let c = 0; c < 15; c++) {
+        initGridCells[r][c] = { owner: null, nickname: "" };
+      }
+    }
+    setGridCells(initGridCells);
+    
     // Game initialization logic will be implemented here
     console.log("Game initialized");
-  };
+  }, []);
 
   const showHint = () => {
     // Hint logic will be implemented here
