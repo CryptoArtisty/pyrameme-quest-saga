@@ -20,10 +20,11 @@ export const useCellClaim = ({
   toast
 }: UseCellClaimProps) => {
   const claimCell = async (nickname: string, initials: string): Promise<boolean> => {
-    if (!gameState.claimTarget) return false;
+    const target = gameState.claimTarget;
+    if (!target) return false;
     
     try {
-      const { col, row } = gameState.claimTarget;
+      const { col, row } = target;
       
       const isCorner = (row === 0 || row === 14) && (col === 0 || col === 14);
       const cost = isCorner ? 20 : 5;
@@ -46,6 +47,7 @@ export const useCellClaim = ({
       
       setGridCells(prev => {
         const newGrid = [...prev];
+        if (!newGrid[row]) newGrid[row] = [];
         newGrid[row][col] = {
           owner: gameState.playerAccount || 'local-player',
           nickname: initials

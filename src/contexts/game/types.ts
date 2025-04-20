@@ -1,4 +1,3 @@
-
 import { Cell, PlayerPosition, Treasure, GridCell, Achievement, LeaderboardEntry } from '@/types/game';
 
 export interface GameStateType {
@@ -16,6 +15,7 @@ export interface GameStateType {
   timeRemaining: number;
   startTime: number;
   activeModal: string | null;
+  claimTarget: { col: number; row: number } | null;
 }
 
 export interface GameContextType {

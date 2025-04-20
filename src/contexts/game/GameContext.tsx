@@ -7,6 +7,8 @@ import { usePlayerMovement } from './hooks/usePlayerMovement';
 import { useWallet } from './hooks/useWallet';
 import { useHint } from './hooks/useHint';
 import { useCellClaim } from './hooks/useCellClaim';
+import { useGameInit } from './hooks/useGameInit';
+import { useGameMechanics } from './hooks/useGameMechanics';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -56,17 +58,6 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     toast
   });
 
-  const { onCellClick } = useGameActions({
-    gameState,
-    player,
-    maze,
-    gridCells,
-    setClaimTarget,
-    setActiveModal,
-    movePlayerToCell,
-    toast
-  });
-
   useGameTimer({
     gameState,
     startPlayPhase,
@@ -98,13 +89,29 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     toast
   });
 
-  const toggleMenu = () => {
-    setIsMenuOpen(prev => !prev);
-  };
+  const { initializeGame, newRound } = useGameInit({
+    defaultGameState,
+    setGameState,
+    setGridCells,
+    setMaze,
+    setPlayer,
+    setTreasures,
+    setExitCell,
+    setClaimTarget,
+    setActiveModal,
+    toast
+  });
 
-  const showModal = (modalName: string | null) => {
-    setActiveModal(modalName);
-  };
+  const { onCellClick, toggleMenu, showModal } = useGameMechanics({
+    gameState,
+    player,
+    maze,
+    gridCells,
+    setClaimTarget,
+    setActiveModal,
+    movePlayerToCell,
+    toast
+  });
 
   return (
     <GameContext.Provider
@@ -123,51 +130,9 @@ export const GameProvider = ({ children }: GameProviderProps) => {
         activeModal,
         claimTarget,
         onCellClick,
-        initializeGame: () => {
-          setGameState({
-            ...defaultGameState,
-            startTime: Date.now()
-          });
-          setGridCells(Array(15).fill(null).map(() => 
-            Array(15).fill(null).map(() => ({ owner: null, nickname: "" }))
-          ));
-          setMaze([]);
-          setPlayer(null);
-          setTreasures([]);
-          setExitCell(null);
-          setClaimTarget(null);
-          if (!localStorage.getItem('tutorialShown')) {
-            setActiveModal('tutorial');
-            localStorage.setItem('tutorialShown', 'true');
-          }
-          toast({
-            title: "Game Initialized",
-            description: "Claim your cells before time runs out!",
-          });
-        },
+        initializeGame,
         showHint,
-        newRound: () => {
-          setGameState(prev => ({
-            ...defaultGameState,
-            highScore: prev.highScore,
-            walletBalance: prev.walletBalance,
-            playerAccount: prev.playerAccount,
-            playerWaxWallet: prev.playerWaxWallet,
-            startTime: Date.now()
-          }));
-          setGridCells(Array(15).fill(null).map(() => 
-            Array(15).fill(null).map(() => ({ owner: null, nickname: "" }))
-          ));
-          setMaze([]);
-          setPlayer(null);
-          setTreasures([]);
-          setExitCell(null);
-          setClaimTarget(null);
-          toast({
-            title: "New Round Started",
-            description: "Claim your cells before time runs out!",
-          });
-        },
+        newRound,
         movePlayer,
         connectWallet,
         buyPgl,
