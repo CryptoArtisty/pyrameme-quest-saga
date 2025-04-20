@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { GameStateType } from './types';
@@ -78,6 +77,38 @@ export const useGameState = () => {
     setActiveModal("victory");
   };
 
+  const newRound = () => {
+    setGameState(prev => ({
+      ...defaultGameState,
+      highScore: prev.highScore,
+      walletBalance: prev.walletBalance,
+      playerAccount: prev.playerAccount,
+      playerWaxWallet: prev.playerWaxWallet,
+      startTime: Date.now()
+    }));
+    
+    const initGridCells: GridCell[][] = [];
+    for (let r = 0; r < 15; r++) {
+      initGridCells[r] = [];
+      for (let c = 0; c < 15; c++) {
+        initGridCells[r][c] = { owner: null, nickname: "" };
+      }
+    }
+    setGridCells(initGridCells);
+    
+    setMaze([]);
+    setPlayer(null);
+    setTreasures([]);
+    setExitCell(null);
+    setHintPaths([]);
+    setClaimTarget(null);
+    
+    toast({
+      title: "New Round Started",
+      description: "Claim your cells before time runs out!",
+    });
+  };
+
   return {
     maze, setMaze,
     player, setPlayer,
@@ -94,6 +125,7 @@ export const useGameState = () => {
     claimTarget, setClaimTarget,
     startPlayPhase,
     handleGameOver,
+    newRound,
     defaultGameState,
     toast
   };
