@@ -6,6 +6,7 @@ import { useGameTimer } from './hooks/useGameTimer';
 import { usePlayerMovement } from './hooks/usePlayerMovement';
 import { useWallet } from './hooks/useWallet';
 import { useHint } from './hooks/useHint';
+import { useCellClaim } from './hooks/useCellClaim';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -88,64 +89,21 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     toast
   });
 
+  const { claimCell } = useCellClaim({
+    gameState,
+    setGameState,
+    setGridCells,
+    setClaimTarget,
+    setActiveModal,
+    toast
+  });
+
   const toggleMenu = () => {
     setIsMenuOpen(prev => !prev);
   };
 
   const showModal = (modalName: string | null) => {
     setActiveModal(modalName);
-  };
-
-  const claimCell = async (nickname: string, initials: string) => {
-    if (!claimTarget) return false;
-    
-    try {
-      const { col, row } = claimTarget;
-      
-      const isCorner = (row === 0 || row === 14) && (col === 0 || col === 14);
-      const cost = isCorner ? 20 : 5;
-      
-      if (gameState.walletBalance < cost) {
-        toast({
-          title: "Insufficient Funds",
-          description: `You need ${cost} Pgl to claim this cell.`,
-        });
-        return false;
-      }
-      
-      setGameState(prev => ({
-        ...prev,
-        walletBalance: prev.walletBalance - cost,
-        totalLoss: prev.totalLoss + cost,
-        playerNickname: nickname,
-        playerClaimed: true
-      }));
-      
-      setGridCells(prev => {
-        const newGrid = [...prev];
-        newGrid[row][col] = {
-          owner: gameState.playerAccount || 'local-player',
-          nickname: initials
-        };
-        return newGrid;
-      });
-      
-      setClaimTarget(null);
-      setActiveModal(null);
-      
-      toast({
-        title: "Cell Claimed!",
-        description: `You've successfully claimed this cell for ${cost} Pgl.`,
-      });
-      
-      return true;
-    } catch (error) {
-      toast({
-        title: "Claim Failed",
-        description: "Could not claim the cell.",
-      });
-      return false;
-    }
   };
 
   return (

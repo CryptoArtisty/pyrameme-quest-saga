@@ -1,4 +1,3 @@
-
 import { useCallback, useEffect } from 'react';
 import { Cell, PlayerPosition, GridCell, Treasure } from '@/types/game';
 import { GameStateType } from '../types';
@@ -55,10 +54,14 @@ export const usePlayerMovement = ({
     
     const treasure = treasures.find(t => t.col === col && t.row === row && !t.collected);
     if (treasure) {
-      setTreasures(prev => prev.map(t => 
-        t.col === col && t.row === row ? { ...t, collected: true } : t
-      ));
+      const updatedTreasures = treasures.map(t => {
+        if (t.col === col && t.row === row) {
+          return { ...t, collected: true };
+        }
+        return t;
+      });
       
+      setTreasures(updatedTreasures);
       setGameState(prev => ({
         ...prev,
         walletBalance: prev.walletBalance + treasure.value,
@@ -158,4 +161,3 @@ export const usePlayerMovement = ({
 
   return { movePlayer, movePlayerToCell };
 };
-
