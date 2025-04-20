@@ -1,7 +1,7 @@
-
 import React, { createContext, useContext, useEffect } from 'react';
 import { GameContextType } from './types';
 import { useGameState } from './useGameState';
+import { useGameActions } from './hooks/useGameActions';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -38,6 +38,17 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     newRound,
     toast
   } = useGameState();
+
+  const { onCellClick } = useGameActions({
+    gameState,
+    player,
+    maze,
+    gridCells,
+    setClaimTarget,
+    setActiveModal,
+    movePlayerToCell,
+    toast
+  });
 
   useEffect(() => {
     if (gameState.gameOver) return;
