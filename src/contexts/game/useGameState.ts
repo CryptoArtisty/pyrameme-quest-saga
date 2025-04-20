@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { useToast } from "@/hooks/use-toast";
 import { GameStateType } from './types';
@@ -26,6 +27,7 @@ const defaultGameState: GameStateType = {
   timeRemaining: 10,
   startTime: Date.now(),
   activeModal: null,
+  claimTarget: null
 };
 
 export const useGameState = () => {
@@ -35,7 +37,6 @@ export const useGameState = () => {
   const [treasures, setTreasures] = useState<Treasure[]>([]);
   const [exitCell, setExitCell] = useState<{ col: number; row: number } | null>(null);
   const [gridCells, setGridCells] = useState<GridCell[][]>(generateInitialGridCells());
-  const [hintPaths, setHintPaths] = useState<number[][]>([]);
   const [gameState, setGameState] = useState<GameStateType>(defaultGameState);
   const [achievements] = useState([]);
   const [leaderboard] = useState([]);
@@ -77,45 +78,12 @@ export const useGameState = () => {
     setActiveModal("victory");
   };
 
-  const newRound = () => {
-    setGameState(prev => ({
-      ...defaultGameState,
-      highScore: prev.highScore,
-      walletBalance: prev.walletBalance,
-      playerAccount: prev.playerAccount,
-      playerWaxWallet: prev.playerWaxWallet,
-      startTime: Date.now()
-    }));
-    
-    const initGridCells: GridCell[][] = [];
-    for (let r = 0; r < 15; r++) {
-      initGridCells[r] = [];
-      for (let c = 0; c < 15; c++) {
-        initGridCells[r][c] = { owner: null, nickname: "" };
-      }
-    }
-    setGridCells(initGridCells);
-    
-    setMaze([]);
-    setPlayer(null);
-    setTreasures([]);
-    setExitCell(null);
-    setHintPaths([]);
-    setClaimTarget(null);
-    
-    toast({
-      title: "New Round Started",
-      description: "Claim your cells before time runs out!",
-    });
-  };
-
   return {
     maze, setMaze,
     player, setPlayer,
     treasures, setTreasures,
     exitCell, setExitCell,
     gridCells, setGridCells,
-    hintPaths, setHintPaths,
     gameState, setGameState,
     achievements,
     leaderboard,
@@ -125,7 +93,6 @@ export const useGameState = () => {
     claimTarget, setClaimTarget,
     startPlayPhase,
     handleGameOver,
-    newRound,
     defaultGameState,
     toast
   };

@@ -45,14 +45,14 @@ export const useCellClaim = ({
         playerClaimed: true
       }));
       
-      setGridCells(prev => {
-        const newGrid = [...prev];
-        if (!newGrid[row]) newGrid[row] = [];
-        newGrid[row][col] = {
+      setGridCells(prevCells => {
+        const newCells = [...prevCells];
+        if (!newCells[row]) newCells[row] = [];
+        newCells[row][col] = {
           owner: gameState.playerAccount || 'local-player',
           nickname: initials
         };
-        return newGrid;
+        return newCells;
       });
       
       setClaimTarget(null);
