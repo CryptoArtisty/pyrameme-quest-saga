@@ -1,8 +1,10 @@
+
 import React, { createContext, useContext, useState, ReactNode, useCallback, useEffect } from 'react';
-import { Cell, PlayerPosition, Treasure, GridCell, GameState, Achievement, LeaderboardEntry } from '@/types/game';
+import { Cell, PlayerPosition, Treasure, GridCell, Achievement, LeaderboardEntry } from '@/types/game';
 import { useToast } from "@/hooks/use-toast";
 
-interface GameState {
+// Rename the interface to avoid conflict with the imported type
+interface GameStateType {
   phase: "claim" | "play";
   score: number;
   highScore: number;
@@ -26,12 +28,13 @@ interface GameContextType {
   exitCell: { col: number; row: number } | null;
   gridCells: GridCell[][];
   hintPaths: number[][];
-  gameState: GameState;
+  gameState: GameStateType;
   achievements: Achievement[];
   leaderboard: LeaderboardEntry[];
   isWalletConnected: boolean;
   isMenuOpen: boolean;
   activeModal: string | null;
+  claimTarget: {col: number, row: number} | null; // Add claimTarget to the interface
   onCellClick: (col: number, row: number) => void;
   initializeGame: () => void;
   showHint: () => void;
@@ -44,7 +47,7 @@ interface GameContextType {
   claimCell: (nickname: string, initials: string, col: number, row: number) => Promise<boolean>;
 }
 
-const defaultGameState: GameState = {
+const defaultGameState: GameStateType = {
   phase: "claim",
   score: 0,
   highScore: 0,
@@ -83,7 +86,7 @@ export const GameProvider = ({ children }: GameProviderProps) => {
   const [exitCell, setExitCell] = useState<{ col: number; row: number } | null>(null);
   const [gridCells, setGridCells] = useState<GridCell[][]>([]);
   const [hintPaths, setHintPaths] = useState<number[][]>([]);
-  const [gameState, setGameState] = useState<GameState>(defaultGameState);
+  const [gameState, setGameState] = useState<GameStateType>(defaultGameState);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
@@ -671,6 +674,7 @@ export const GameProvider = ({ children }: GameProviderProps) => {
         isWalletConnected,
         isMenuOpen,
         activeModal,
+        claimTarget, // Add claimTarget to the context value
         onCellClick,
         initializeGame,
         showHint,

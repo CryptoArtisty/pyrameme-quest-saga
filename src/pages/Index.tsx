@@ -1,13 +1,14 @@
-
 import React, { useEffect } from 'react';
 import { GameProvider, useGame } from '@/contexts/GameContext';
 import MazeCanvas from '@/components/game/MazeCanvas';
-import { Menu, Wallet, Trophy, Share } from 'lucide-react';
+import { Menu, Wallet, Trophy, Share, LogIn } from 'lucide-react';
 import { Toaster } from '@/components/ui/toaster';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Link } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthProvider';
 
 // Component for the claim modal
 const ClaimModal = () => {
@@ -138,7 +139,6 @@ const VictoryModal = () => {
           <Button 
             variant="outline"
             onClick={() => {
-              // Web Share API
               if (navigator.share) {
                 navigator.share({
                   title: 'Pyrameme Game',
@@ -146,7 +146,6 @@ const VictoryModal = () => {
                   url: window.location.href,
                 });
               } else {
-                // Fallback to clipboard
                 navigator.clipboard.writeText(
                   `I scored ${gameState.score} points in Pyrameme! Play at ${window.location.href}`
                 );
@@ -283,8 +282,11 @@ const GameContent = () => {
     isWalletConnected,
     connectWallet,
     buyPgl,
-    showModal
+    showModal,
+    claimTarget
   } = useGame();
+  
+  const { user } = useAuth();
   
   useEffect(() => {
     initializeGame();
@@ -305,7 +307,15 @@ const GameContent = () => {
           <Menu className="h-6 w-6" />
         </button>
         <h1 className="text-4xl text-center">𓋹 Pyrameme 𓋹</h1>
-        <div className="w-10"></div> {/* Spacer for alignment */}
+        <div className="w-10">
+          {!user && (
+            <Link to="/auth">
+              <Button variant="ghost" size="icon">
+                <LogIn className="h-6 w-6" />
+              </Button>
+            </Link>
+          )}
+        </div>
       </header>
 
       {/* Game Stats */}
@@ -397,6 +407,18 @@ const GameContent = () => {
             <SheetTitle className="text-gold">Menu</SheetTitle>
           </SheetHeader>
           <div className="mt-6 space-y-4">
+            {!user && (
+              <Button 
+                variant="outline" 
+                className="w-full border-gold text-gold justify-start"
+                asChild
+              >
+                <Link to="/auth">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Login / Sign Up
+                </Link>
+              </Button>
+            )}
             <Button 
               variant="outline" 
               className="w-full border-gold text-gold justify-start"
