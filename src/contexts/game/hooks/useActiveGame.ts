@@ -67,8 +67,9 @@ export const useActiveGame = () => {
         table: 'games',
         filter: 'is_active=eq.true',
       }, payload => {
-        const d = payload.new;
-        if (d) {
+        // Make sure the payload has the new data
+        if (payload.new && typeof payload.new === 'object') {
+          const d = payload.new as Record<string, any>;
           setSharedGame({
             id: d.id,
             maze: parseJSON<Cell[]>(d.maze),

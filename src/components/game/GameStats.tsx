@@ -1,19 +1,21 @@
+
 import React from 'react';
 import { useGame } from '@/contexts/game/GameContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Wallet } from 'lucide-react';
 
 const formatTime = (seconds: number) => {
+  if (isNaN(seconds) || seconds < 0) return "0:00";
+  
   // Pad always, show MM:SS
   const mins = Math.floor(seconds / 60);
-  const secs = seconds % 60;
+  const secs = Math.floor(seconds % 60);
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 };
 
 export const GameStats = () => {
   const { gameState } = useGame();
 
-  // Using gameState.timeRemaining which is now synced to the shared game's timer
   return (
     <div className="flex flex-wrap justify-center gap-4 m-5">
       <Card className="bg-black/70 border-2 border-gold">
@@ -36,7 +38,9 @@ export const GameStats = () => {
       </Card>
       <Card className="bg-black/70 border-2 border-gold">
         <CardContent className="p-4">
-          <span>Phase: {gameState.phase} ({formatTime(gameState.timeRemaining)})</span>
+          <span>
+            Phase: {gameState.phase} ({formatTime(gameState.timeRemaining)})
+          </span>
         </CardContent>
       </Card>
     </div>
