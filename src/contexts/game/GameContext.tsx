@@ -120,27 +120,30 @@ export const GameProvider = ({ children }: GameProviderProps) => {
   const { sharedGame, isLoading: loadingSharedGame } = useActiveGame();
 
   // Use shared game data when available
-  const effectiveMaze = sharedGame?.maze || maze;
-  const effectiveTreasures = sharedGame?.treasures || treasures;
+  const effectiveMaze = sharedGame?.maze && sharedGame.maze.length > 0 ? sharedGame.maze : maze;
+  const effectiveTreasures = sharedGame?.treasures && sharedGame.treasures.length > 0 ? sharedGame.treasures : treasures;
   const effectiveExitCell = sharedGame?.exitCell || exitCell;
   const effectivePhase = sharedGame?.phase || gameState.phase;
   const effectiveStartTime = sharedGame?.startTime || gameState.startTime;
   const effectiveTimerDuration = sharedGame?.timerDuration || 0;
 
-  // Patch timer: calculate from startTime and duration
+  // Patch timer: calculate from startTime and duration (always use shared, fallback to local)
   const [syncedTimeLeft, setSyncedTimeLeft] = React.useState(0);
+
   React.useEffect(() => {
-    if (!sharedGame) return;
+    if (!sharedGame) {
+      setSyncedTimeLeft(gameState.timeRemaining);
+      return;
+    }
     function updateTime() {
-      const now = new Date();
-      const start = new Date(sharedGame.startTime);
-      const elapsed = Math.floor((now.getTime() - start.getTime()) / 1000);
+      const now = Date.now();
+      const elapsed = Math.floor((now - sharedGame.startTime) / 1000);
       setSyncedTimeLeft(Math.max(0, sharedGame.timerDuration - elapsed));
     }
     updateTime();
     const interval = setInterval(updateTime, 1000);
     return () => clearInterval(interval);
-  }, [sharedGame]);
+  }, [sharedGame, gameState.timeRemaining]);
 
   return (
     <GameContext.Provider

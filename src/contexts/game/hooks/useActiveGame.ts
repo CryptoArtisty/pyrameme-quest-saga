@@ -1,7 +1,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Cell, Treasure, PlayerPosition } from '@/types/game';
+import { Cell, Treasure } from '@/types/game';
 
 type SharedGameState = {
   id: string;
@@ -9,10 +9,16 @@ type SharedGameState = {
   treasures: Treasure[];
   exitCell: { col: number; row: number };
   phase: "claim" | "play";
-  startTime: string;
-  timerDuration: number;
+  startTime: number; // UNIX milliseconds
+  timerDuration: number; // seconds
   updatedAt: string;
 };
+
+function parseJSON<T>(input: any): T {
+  if (!input) return [] as any;
+  if (typeof input === 'string') return JSON.parse(input);
+  return input;
+}
 
 export const useActiveGame = () => {
   const [sharedGame, setSharedGame] = useState<SharedGameState | null>(null);
@@ -27,19 +33,23 @@ export const useActiveGame = () => {
       .eq('is_active', true)
       .order('created_at', { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (data) {
       setSharedGame({
         id: data.id,
-        maze: data.maze,
-        treasures: data.treasures,
-        exitCell: data.exit_cell,
-        phase: data.phase,
-        startTime: data.start_time,
-        timerDuration: data.timer_duration,
+        maze: parseJSON<Cell[]>(data.maze),
+        treasures: parseJSON<Treasure[]>(data.treasures),
+        exitCell: parseJSON<{ col: number; row: number }>(data.exit_cell),
+        phase: data.phase === 'play' ? 'play' : 'claim',
+        startTime: typeof data.start_time === 'string'
+          ? new Date(data.start_time).getTime()
+          : Number(data.start_time),
+        timerDuration: Number(data.timer_duration),
         updatedAt: data.updated_at,
       });
+    } else {
+      setSharedGame(null);
     }
     setIsLoading(false);
     if (error) console.error(error.message);
@@ -49,7 +59,6 @@ export const useActiveGame = () => {
   useEffect(() => {
     fetchActiveGame();
 
-    // Subscribe to changes on games table
     const channel = supabase
       .channel('public:games')
       .on('postgres_changes', {
@@ -58,17 +67,19 @@ export const useActiveGame = () => {
         table: 'games',
         filter: 'is_active=eq.true',
       }, payload => {
-        // Update state when the shared game changes
-        if (payload.new) {
+        const d = payload.new;
+        if (d) {
           setSharedGame({
-            id: payload.new.id,
-            maze: payload.new.maze,
-            treasures: payload.new.treasures,
-            exitCell: payload.new.exit_cell,
-            phase: payload.new.phase,
-            startTime: payload.new.start_time,
-            timerDuration: payload.new.timer_duration,
-            updatedAt: payload.new.updated_at,
+            id: d.id,
+            maze: parseJSON<Cell[]>(d.maze),
+            treasures: parseJSON<Treasure[]>(d.treasures),
+            exitCell: parseJSON<{ col: number; row: number }>(d.exit_cell),
+            phase: d.phase === 'play' ? 'play' : 'claim',
+            startTime: typeof d.start_time === 'string'
+              ? new Date(d.start_time).getTime()
+              : Number(d.start_time),
+            timerDuration: Number(d.timer_duration),
+            updatedAt: d.updated_at,
           });
         } else {
           fetchActiveGame();
