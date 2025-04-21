@@ -5,7 +5,7 @@ import { GridCell } from '@/types/game';
 interface UseCellClaimProps {
   gameState: GameStateType;
   setGameState: (state: React.SetStateAction<GameStateType>) => void;
-  setGridCells: (cells: GridCell[][]) => void;
+  setGridCells: (cells: React.SetStateAction<GridCell[][]>) => void;
   setClaimTarget: (target: { col: number; row: number } | null) => void;
   setActiveModal: (modal: string | null) => void;
   toast: any;

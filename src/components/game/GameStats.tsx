@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useGame } from '@/contexts/GameContext';
+import { useGame } from '@/contexts/game/GameContext';
 import { Card, CardContent } from '@/components/ui/card';
 import { Wallet } from 'lucide-react';
 

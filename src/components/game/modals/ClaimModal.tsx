@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useGame } from '@/contexts/GameContext';
+import { useGame } from '@/contexts/game/GameContext';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -18,7 +18,7 @@ export const ClaimModal = () => {
 
   const handleClaim = async () => {
     if (!claimTarget) return;
-    const success = await claimCell(nickname, initials, claimTarget.col, claimTarget.row);
+    const success = await claimCell(nickname, initials);
     if (success) {
       showModal(null);
     }

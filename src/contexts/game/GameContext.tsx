@@ -111,6 +111,8 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     setClaimTarget,
     setActiveModal,
     movePlayerToCell,
+    isMenuOpen,
+    setIsMenuOpen,
     toast
   });
 

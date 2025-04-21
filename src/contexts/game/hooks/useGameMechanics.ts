@@ -11,6 +11,8 @@ interface UseGameMechanicsProps {
   setClaimTarget: (target: { col: number; row: number } | null) => void;
   setActiveModal: (modal: string | null) => void;
   movePlayerToCell: (col: number, row: number) => void;
+  isMenuOpen: boolean;
+  setIsMenuOpen: (open: boolean) => void;
   toast: any;
 }
 
@@ -22,13 +24,15 @@ export const useGameMechanics = ({
   setClaimTarget,
   setActiveModal,
   movePlayerToCell,
+  isMenuOpen,
+  setIsMenuOpen,
   toast
 }: UseGameMechanicsProps) => {
   const onCellClick = useCallback((col: number, row: number) => {
     if (gameState.gameOver) return;
     
     if (gameState.phase === 'claim') {
-      const isClaimed = gridCells[row][col].owner !== null;
+      const isClaimed = gridCells[row] && gridCells[row][col] && gridCells[row][col].owner !== null;
       if (isClaimed) {
         toast({
           title: "Cell Already Claimed",
@@ -73,8 +77,8 @@ export const useGameMechanics = ({
   }, [gameState, player, maze, gridCells, setClaimTarget, setActiveModal, movePlayerToCell, toast]);
 
   const toggleMenu = useCallback(() => {
-    return undefined;
-  }, []);
+    setIsMenuOpen(!isMenuOpen);
+  }, [isMenuOpen, setIsMenuOpen]);
 
   const showModal = useCallback((modalName: string | null) => {
     setActiveModal(modalName);
