@@ -10,11 +10,13 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+} from '@/components/ui/dialog';
+import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from '@/components/ui/dialog';
+} from '@/components/ui/tabs';
 
 export const BuyPglModal = () => {
   const { activeModal, showModal, buyPgl } = useGame();
