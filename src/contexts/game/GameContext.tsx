@@ -128,46 +128,49 @@ export const GameProvider = ({ children }: GameProviderProps) => {
       if (sharedGame.maze && sharedGame.maze.length > 0) {
         setMaze(sharedGame.maze);
       }
-      
       // Update treasures
       if (sharedGame.treasures && sharedGame.treasures.length > 0) {
         setTreasures(sharedGame.treasures);
       }
-      
       // Update exit cell
       if (sharedGame.exitCell) {
         setExitCell(sharedGame.exitCell);
       }
-      
-      // Update phase and timing information
+      // Update phase and timing information (update ALL timing from backend)
       setGameState(prev => ({
         ...prev,
         phase: sharedGame.phase,
         startTime: sharedGame.startTime,
-        // We'll calculate timeRemaining in the next useEffect
+        timeRemaining: calcTimeRemaining(sharedGame)
       }));
     }
   }, [sharedGame, setMaze, setTreasures, setExitCell, setGameState]);
 
-  // Calculate and update time remaining based on shared game data
+  // Helper to calculate time left from shared game
+  function calcTimeRemaining(gameData: any) {
+    const now = Date.now();
+    const elapsed = Math.floor((now - gameData.startTime) / 1000);
+    const timeLeft = Math.max(0, (gameData.timerDuration || 0) - elapsed);
+    return timeLeft;
+  }
+
+  // Countdown sync: updates every second using sharedGame and restarts instantly for new sessions (from DB changes)
   useEffect(() => {
     if (!sharedGame) return;
-    
-    const updateTimeRemaining = () => {
-      const now = Date.now();
-      const elapsed = Math.floor((now - sharedGame.startTime) / 1000);
-      const timeLeft = Math.max(0, sharedGame.timerDuration - elapsed);
-      
+
+    const updateTimeAndSession = () => {
       setGameState(prev => ({
         ...prev,
-        timeRemaining: timeLeft
+        timeRemaining: calcTimeRemaining(sharedGame),
+        phase: sharedGame.phase
       }));
+
+      // No need to start/end sessions here; backend already instantly starts new session as soon as timer runs out!
+      // We only synchronize to backend state. The game "never ends" as backend handles cycle.
     };
-    
-    // Update immediately and then set interval
-    updateTimeRemaining();
-    const interval = setInterval(updateTimeRemaining, 1000);
-    
+
+    updateTimeAndSession();
+    const interval = setInterval(updateTimeAndSession, 1000);
     return () => clearInterval(interval);
   }, [sharedGame, setGameState]);
 

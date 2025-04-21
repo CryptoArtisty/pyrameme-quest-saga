@@ -28,7 +28,6 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
@@ -36,7 +35,7 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       // Draw grid
       ctx.strokeStyle = "rgba(255,215,0,0.3)";
       ctx.lineWidth = 1;
@@ -53,26 +52,14 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ctx.stroke();
       }
 
-      // Draw claimed cells
-      gridCells.forEach((row, r) => {
-        row.forEach((cell, c) => {
-          if (cell.owner) {
-            ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-            ctx.fillRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-            ctx.font = `bold ${CELL_SIZE / 2}px sans-serif`;
-            ctx.fillStyle = "#FFD700";
-            ctx.textAlign = "center";
-            ctx.textBaseline = "middle";
-            ctx.fillText(cell.nickname || "✓", c * CELL_SIZE + CELL_SIZE / 2, r * CELL_SIZE + CELL_SIZE / 2);
-          }
-        });
-      });
-
       // Draw maze walls
       maze.forEach((cell) => {
         const x = cell.col * CELL_SIZE, y = cell.row * CELL_SIZE;
+        // Make walls bold and visible
         ctx.strokeStyle = "#00ffff";
         ctx.lineWidth = 6;
+
+        // Draw each wall individually, it's bold and visible on every border tile
         if (cell.walls.top) {
           ctx.beginPath();
           ctx.moveTo(x, y);
@@ -87,16 +74,31 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
         }
         if (cell.walls.bottom) {
           ctx.beginPath();
-          ctx.moveTo(x + CELL_SIZE, y + CELL_SIZE);
-          ctx.lineTo(x, y + CELL_SIZE);
+          ctx.moveTo(x, y + CELL_SIZE);
+          ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE);
           ctx.stroke();
         }
         if (cell.walls.left) {
           ctx.beginPath();
-          ctx.moveTo(x, y + CELL_SIZE);
-          ctx.lineTo(x, y);
+          ctx.moveTo(x, y);
+          ctx.lineTo(x, y + CELL_SIZE);
           ctx.stroke();
         }
+      });
+
+      // Draw claimed cells
+      gridCells.forEach((row, r) => {
+        row.forEach((cell, c) => {
+          if (cell.owner) {
+            ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+            ctx.fillRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+            ctx.font = `bold ${CELL_SIZE / 2}px sans-serif`;
+            ctx.fillStyle = "#FFD700";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText(cell.nickname || "✓", c * CELL_SIZE + CELL_SIZE / 2, r * CELL_SIZE + CELL_SIZE / 2);
+          }
+        });
       });
 
       // Draw hint paths
