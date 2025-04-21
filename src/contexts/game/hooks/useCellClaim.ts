@@ -26,14 +26,17 @@ export const useCellClaim = ({
     try {
       const { col, row } = target;
       
-      const isCorner = (row === 0 || row === 14) && (col === 0 || col === 14);
-      const cost = isCorner ? 20 : 5;
+      // Check if the cell is on the edge of the grid
+      const isEdge = row === 0 || row === 14 || col === 0 || col === 14;
+      // Edge cells cost 20,000 gold, other cells cost 2,000 gold
+      const cost = isEdge ? 20000 : 2000;
       
       if (gameState.walletBalance < cost) {
         toast({
           title: "Insufficient Funds",
-          description: `You need ${cost} Pgl to claim this cell.`,
+          description: `You need ${cost} gold to claim this cell.`,
         });
+        setActiveModal("buy");
         return false;
       }
       
@@ -60,7 +63,7 @@ export const useCellClaim = ({
       
       toast({
         title: "Cell Claimed!",
-        description: `You've successfully claimed this cell for ${cost} Pgl.`,
+        description: `You've successfully claimed this cell for ${cost} gold.`,
       });
       
       return true;

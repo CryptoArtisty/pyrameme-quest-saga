@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { GameStateType } from '../types';
 import { PlayerPosition } from '@/types/game';
 
@@ -19,37 +19,50 @@ export const useHint = ({
   toast
 }: UseHintProps) => {
   const [hintPaths, setHintPaths] = useState<number[][]>([]);
-
-  const showHint = () => {
-    if (gameState.phase !== 'play' || !player || !exitCell) return;
+  
+  const showHint = useCallback(() => {
+    if (gameState.phase !== 'play' || !player || !exitCell) {
+      toast({
+        title: "Hint Not Available",
+        description: "Hints are only available during the play phase.",
+      });
+      return;
+    }
     
-    if (gameState.walletBalance < 10) {
+    const cost = 1000; // 1000 gold for a hint
+    
+    if (gameState.walletBalance < cost) {
       toast({
         title: "Insufficient Funds",
-        description: "You need 10 Pgl to get a hint.",
+        description: `You need ${cost} gold to get a hint.`,
       });
       return;
     }
     
     setGameState(prev => ({
       ...prev,
-      walletBalance: prev.walletBalance - 10,
-      totalLoss: prev.totalLoss + 10
+      walletBalance: prev.walletBalance - cost
     }));
     
-    const hintPath: number[][] = [];
-    const dx = exitCell.col - player.col;
-    const dy = exitCell.row - player.row;
-    const steps = Math.max(Math.abs(dx), Math.abs(dy));
+    // Simple hint showing a path (this is just for demo purposes)
+    const newHintPaths: number[][] = [];
+    let currentCol = player.col;
+    let currentRow = player.row;
+    const targetCol = exitCell.col;
+    const targetRow = exitCell.row;
     
-    for (let i = 1; i <= steps; i++) {
-      const progress = i / steps;
-      const x = Math.round(player.col + dx * progress);
-      const y = Math.round(player.row + dy * progress);
-      hintPath.push([x, y]);
+    while (currentCol !== targetCol || currentRow !== targetRow) {
+      if (currentCol < targetCol) currentCol++;
+      else if (currentCol > targetCol) currentCol--;
+      else if (currentRow < targetRow) currentRow++;
+      else if (currentRow > targetRow) currentRow--;
+      
+      newHintPaths.push([currentCol, currentRow]);
+      
+      if (newHintPaths.length > 10) break; // Limit the hint path length
     }
     
-    setHintPaths(hintPath);
+    setHintPaths(newHintPaths);
     
     setTimeout(() => {
       setHintPaths([]);
@@ -57,9 +70,9 @@ export const useHint = ({
     
     toast({
       title: "Hint Activated",
-      description: "Path to exit shown briefly.",
+      description: "Follow the highlighted path!",
     });
-  };
-
+  }, [gameState, player, exitCell, setGameState, toast]);
+  
   return { hintPaths, showHint };
 };

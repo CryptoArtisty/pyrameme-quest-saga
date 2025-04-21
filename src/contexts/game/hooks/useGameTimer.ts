@@ -21,7 +21,7 @@ export const useGameTimer = ({
     const timer = setInterval(() => {
       const now = Date.now();
       const elapsed = Math.floor((now - gameState.startTime) / 1000);
-      const phaseTime = gameState.phase === 'claim' ? 10 : 300;
+      const phaseTime = gameState.phase === 'claim' ? 10 : 120; // 2 minutes for play phase
       const remaining = Math.max(0, phaseTime - elapsed);
       
       setGameState(prev => ({
@@ -41,4 +41,3 @@ export const useGameTimer = ({
     return () => clearInterval(timer);
   }, [gameState.phase, gameState.startTime, gameState.gameOver, startPlayPhase, handleGameOver, setGameState]);
 };
-

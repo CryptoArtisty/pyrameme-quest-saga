@@ -1,3 +1,4 @@
+
 import { Cell, PlayerPosition, Treasure, GridCell, Achievement, LeaderboardEntry } from '@/types/game';
 
 export interface GameStateType {
@@ -38,8 +39,8 @@ export interface GameContextType {
   newRound: () => void;
   movePlayer: (direction: 'up' | 'down' | 'left' | 'right') => void;
   connectWallet: () => Promise<boolean>;
-  buyPgl: (amount: number) => Promise<boolean>;
+  buyPgl: (amount: number, currency?: 'pgl' | 'wax') => Promise<boolean>;
   toggleMenu: () => void;
   showModal: (modalName: string | null) => void;
-  claimCell: (nickname: string, initials: string, col: number, row: number) => Promise<boolean>;
+  claimCell: (nickname: string, initials: string) => Promise<boolean>;
 }

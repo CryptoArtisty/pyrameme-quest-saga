@@ -4,7 +4,7 @@ import { useGame } from '@/contexts/game/GameContext';
 import { Button } from '@/components/ui/button';
 
 export const GameActions = () => {
-  const { gameState, showHint, newRound, isWalletConnected, connectWallet } = useGame();
+  const { gameState, showHint, newRound, isWalletConnected, connectWallet, showModal } = useGame();
 
   return (
     <div className="flex flex-col items-center gap-4 mb-10">
@@ -12,7 +12,7 @@ export const GameActions = () => {
         className="bg-brown text-gold border-2 border-gold px-6 py-2 rounded-lg hover:bg-brown/80 transition-colors"
         onClick={showHint}
       >
-        Hint (10 Pgl)
+        Hint (1000 gold)
       </Button>
       <Button 
         className="bg-brown text-gold border-2 border-gold px-6 py-2 rounded-lg hover:bg-brown/80 transition-colors"
@@ -40,7 +40,14 @@ export const GameActions = () => {
         New Round
       </Button>
       
-      {!isWalletConnected && (
+      {isWalletConnected ? (
+        <Button 
+          className="bg-gold text-dark font-bold border-2 border-gold px-6 py-2 rounded-lg hover:bg-gold/80 transition-colors"
+          onClick={() => showModal('buy')}
+        >
+          Buy More Gold
+        </Button>
+      ) : (
         <Button 
           className="bg-gold text-dark font-bold border-2 border-gold px-6 py-2 rounded-lg hover:bg-gold/80 transition-colors"
           onClick={connectWallet}

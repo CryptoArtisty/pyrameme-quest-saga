@@ -24,13 +24,21 @@ export const ClaimModal = () => {
     }
   };
 
+  // Calculate the cost based on if it's an edge cell
+  const getCost = () => {
+    if (!claimTarget) return 2000;
+    const { col, row } = claimTarget;
+    const isEdge = row === 0 || row === 14 || col === 0 || col === 14;
+    return isEdge ? 20000 : 2000;
+  };
+
   return (
     <Dialog open={activeModal === 'claim'} onOpenChange={(open) => !open && showModal(null)}>
       <DialogContent className="bg-dark text-gold border-gold">
         <DialogHeader>
           <DialogTitle>Claim This Cell</DialogTitle>
           <DialogDescription className="text-sand">
-            Enter your nickname and initials to claim this cell.
+            Enter your nickname and initials to claim this cell for {getCost()} gold.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">

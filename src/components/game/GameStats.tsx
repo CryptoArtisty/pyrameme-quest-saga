@@ -29,7 +29,7 @@ export const GameStats = () => {
         <CardContent className="p-4">
           <span>
             <Wallet className="inline mr-2 h-4 w-4" />
-            {gameState.walletBalance} Pgl
+            {gameState.walletBalance} gold
           </span>
         </CardContent>
       </Card>

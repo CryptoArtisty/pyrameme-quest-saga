@@ -46,7 +46,7 @@ export const useWallet = ({
     }
   }, [setIsWalletConnected, setGameState, toast]);
 
-  const buyPgl = useCallback(async (amount: number): Promise<boolean> => {
+  const buyPgl = useCallback(async (amount: number, currency: 'pgl' | 'wax' = 'pgl'): Promise<boolean> => {
     try {
       if (!isWalletConnected) {
         toast({
@@ -56,28 +56,30 @@ export const useWallet = ({
         return false;
       }
       
+      const goldAmount = currency === 'pgl' ? amount * 1000 : amount * 5000;
+      
       toast({
         title: "Processing Transaction...",
-        description: `Sending ${amount} WAX to buy ${amount * 100} Pgl`,
+        description: `Sending ${amount} ${currency.toUpperCase()} to buy ${goldAmount} gold`,
       });
       
       await new Promise(resolve => setTimeout(resolve, 2000));
       
       setGameState(prev => ({
         ...prev,
-        walletBalance: prev.walletBalance + (amount * 100)
+        walletBalance: prev.walletBalance + goldAmount
       }));
       
       toast({
         title: "Transaction Complete",
-        description: `Successfully purchased ${amount * 100} Pgl!`,
+        description: `Successfully purchased ${goldAmount} gold!`,
       });
       
       return true;
     } catch (error) {
       toast({
         title: "Transaction Failed",
-        description: "Could not complete the Pgl purchase.",
+        description: "Could not complete the gold purchase.",
       });
       return false;
     }
@@ -85,4 +87,3 @@ export const useWallet = ({
 
   return { connectWallet, buyPgl };
 };
-
