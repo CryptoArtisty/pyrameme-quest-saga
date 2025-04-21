@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext } from 'react';
 import { GameContextType } from './types';
 import { useGameState } from './useGameState';
@@ -10,6 +9,7 @@ import { useHint } from './hooks/useHint';
 import { useCellClaim } from './hooks/useCellClaim';
 import { useGameInit } from './hooks/useGameInit';
 import { useGameMechanics } from './hooks/useGameMechanics';
+import { useActiveGame } from './hooks/useActiveGame';
 
 const GameContext = createContext<GameContextType | undefined>(undefined);
 
@@ -116,32 +116,65 @@ export const GameProvider = ({ children }: GameProviderProps) => {
     toast
   });
 
+  // NEW: Shared active game state (all players see the same one)
+  const { sharedGame, isLoading: loadingSharedGame } = useActiveGame();
+
+  // Use shared game data when available
+  const effectiveMaze = sharedGame?.maze || maze;
+  const effectiveTreasures = sharedGame?.treasures || treasures;
+  const effectiveExitCell = sharedGame?.exitCell || exitCell;
+  const effectivePhase = sharedGame?.phase || gameState.phase;
+  const effectiveStartTime = sharedGame?.startTime || gameState.startTime;
+  const effectiveTimerDuration = sharedGame?.timerDuration || 0;
+
+  // Patch timer: calculate from startTime and duration
+  const [syncedTimeLeft, setSyncedTimeLeft] = React.useState(0);
+  React.useEffect(() => {
+    if (!sharedGame) return;
+    function updateTime() {
+      const now = new Date();
+      const start = new Date(sharedGame.startTime);
+      const elapsed = Math.floor((now.getTime() - start.getTime()) / 1000);
+      setSyncedTimeLeft(Math.max(0, sharedGame.timerDuration - elapsed));
+    }
+    updateTime();
+    const interval = setInterval(updateTime, 1000);
+    return () => clearInterval(interval);
+  }, [sharedGame]);
+
   return (
     <GameContext.Provider
       value={{
-        maze,
-        player,
-        treasures,
-        exitCell,
-        gridCells,
-        hintPaths,
-        gameState,
-        achievements,
-        leaderboard,
-        isWalletConnected,
-        isMenuOpen,
-        activeModal,
-        claimTarget,
-        onCellClick,
-        initializeGame,
-        showHint,
-        newRound,
-        movePlayer,
-        connectWallet,
-        buyPgl,
-        toggleMenu,
-        showModal,
-        claimCell,
+        ...{
+          maze: effectiveMaze,
+          player,
+          treasures: effectiveTreasures,
+          exitCell: effectiveExitCell,
+          gridCells,
+          hintPaths,
+          gameState: {
+            ...gameState,
+            phase: effectivePhase,
+            startTime: effectiveStartTime,
+            timeRemaining: syncedTimeLeft,
+          },
+          achievements,
+          leaderboard,
+          isWalletConnected,
+          isMenuOpen,
+          activeModal,
+          claimTarget,
+          onCellClick,
+          initializeGame,
+          showHint,
+          newRound,
+          movePlayer,
+          connectWallet,
+          buyPgl,
+          toggleMenu,
+          showModal,
+          claimCell,
+        }
       }}
     >
       {children}

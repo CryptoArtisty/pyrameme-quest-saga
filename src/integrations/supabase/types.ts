@@ -33,6 +33,45 @@ export type Database = {
         }
         Relationships: []
       }
+      games: {
+        Row: {
+          created_at: string | null
+          exit_cell: Json
+          id: string
+          is_active: boolean | null
+          maze: Json
+          phase: string
+          start_time: string
+          timer_duration: number
+          treasures: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          exit_cell: Json
+          id?: string
+          is_active?: boolean | null
+          maze: Json
+          phase?: string
+          start_time?: string
+          timer_duration?: number
+          treasures: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          exit_cell?: Json
+          id?: string
+          is_active?: boolean | null
+          maze?: Json
+          phase?: string
+          start_time?: string
+          timer_duration?: number
+          treasures?: Json
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       player_room_assignments: {
         Row: {
           game_session_id: string | null
@@ -219,6 +258,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      advance_game_phase: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       is_email_whitelisted: {
         Args: { email_to_check: string }
         Returns: boolean
