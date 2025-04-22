@@ -1,17 +1,20 @@
+
 import { useCallback, useEffect } from 'react';
-import { Cell, PlayerPosition, GridCell, Treasure } from '@/types/game';
+import { Cell, PlayerPosition, GridCell } from '@/types/game';
 import { GameStateType } from '../types';
+import { useTreasureCollection } from './useTreasureCollection';
+import { useExitCell } from './useExitCell';
 
 interface UsePlayerMovementProps {
   gameState: GameStateType;
   player: PlayerPosition | null;
   maze: Cell[];
   gridCells: GridCell[][];
-  treasures: Treasure[];
+  treasures: any[];
   exitCell: { col: number; row: number } | null;
   setPlayer: (position: PlayerPosition | null) => void;
   setGameState: (state: React.SetStateAction<GameStateType>) => void;
-  setTreasures: (treasures: Treasure[]) => void;
+  setTreasures: (treasures: any[]) => void;
   handleGameOver: () => void;
   toast: any;
 }
@@ -29,6 +32,21 @@ export const usePlayerMovement = ({
   handleGameOver,
   toast
 }: UsePlayerMovementProps) => {
+  const { collectTreasure } = useTreasureCollection({
+    treasures,
+    setTreasures,
+    setGameState,
+    toast
+  });
+
+  const { handleExitReached } = useExitCell({
+    gameState,
+    exitCell,
+    setGameState,
+    handleGameOver,
+    toast
+  });
+
   const movePlayerToCell = useCallback((col: number, row: number) => {
     const cell = gridCells[row][col];
     if (cell.owner && cell.owner !== gameState.playerAccount) {
@@ -52,49 +70,10 @@ export const usePlayerMovement = ({
       });
     }
     
-    const treasure = treasures.find(t => t.col === col && t.row === row && !t.collected);
-    if (treasure) {
-      const updatedTreasures = treasures.map(t => {
-        if (t.col === col && t.row === row) {
-          return { ...t, collected: true };
-        }
-        return t;
-      });
-      
-      setTreasures(updatedTreasures);
-      setGameState(prev => ({
-        ...prev,
-        walletBalance: prev.walletBalance + treasure.value,
-        score: prev.score + treasure.value,
-        totalProfit: prev.totalProfit + treasure.value
-      }));
-      
-      toast({
-        title: "Treasure Found!",
-        description: `You found ${treasure.value} Pgl!`,
-      });
-    }
-    
-    if (exitCell && col === exitCell.col && row === exitCell.row) {
-      const timeBonus = Math.floor(gameState.timeRemaining * 0.5);
-      
-      setGameState(prev => ({
-        ...prev,
-        score: prev.score + timeBonus,
-        totalProfit: prev.totalProfit + timeBonus
-      }));
-      
-      toast({
-        title: "Exit Reached!",
-        description: `Time bonus: ${timeBonus} points!`,
-      });
-      
-      handleGameOver();
-      return;
-    }
-    
+    collectTreasure(col, row);
+    handleExitReached(col, row);
     setPlayer({ col, row });
-  }, [gameState, gridCells, treasures, exitCell, setGameState, setTreasures, setPlayer, handleGameOver, toast]);
+  }, [gameState, gridCells, collectTreasure, handleExitReached, setGameState, setPlayer, toast]);
 
   const movePlayer = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
     if (gameState.phase !== 'play' || !player) return;
