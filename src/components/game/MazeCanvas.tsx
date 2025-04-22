@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import { Cell, PlayerPosition, Treasure, GridCell } from '@/types/game';
 
@@ -8,7 +7,7 @@ interface MazeCanvasProps {
   treasures: Treasure[];
   exitCell: PlayerPosition | null;
   gridCells: GridCell[][];
-  hintPaths: number[][]; // Updated type definition
+  hintPaths: number[][]; 
   onCellClick: (col: number, row: number) => void;
 }
 
@@ -52,14 +51,17 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ctx.stroke();
       }
 
-      // Draw maze walls
+      // Draw maze walls with improved visibility
       maze.forEach((cell) => {
         const x = cell.col * CELL_SIZE, y = cell.row * CELL_SIZE;
-        // Make walls bold and visible
-        ctx.strokeStyle = "#00ffff";
-        ctx.lineWidth = 6;
+        
+        // More prominent wall rendering
+        ctx.strokeStyle = "#00BFFF"; // Deep Sky Blue for visibility
+        ctx.lineWidth = 4; // Increased line width
+        ctx.shadowColor = "rgba(0,191,255,0.5)"; // Soft glow effect
+        ctx.shadowBlur = 5;
 
-        // Draw each wall individually, it's bold and visible on every border tile
+        // Draw each wall individually with clear borders
         if (cell.walls.top) {
           ctx.beginPath();
           ctx.moveTo(x, y);
@@ -85,6 +87,10 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
           ctx.stroke();
         }
       });
+
+      // Reset shadow after drawing walls
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
 
       // Draw claimed cells
       gridCells.forEach((row, r) => {
