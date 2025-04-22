@@ -1,11 +1,35 @@
-
 import { Cell, PlayerPosition, Treasure, GridCell } from '@/types/game';
 import { GameStateType } from './types';
 
+const removeWalls = (current: Cell, next: Cell) => {
+  const dx = next.col - current.col;
+  const dy = next.row - current.row;
+  
+  if (dx === 1) {
+    current.walls.right = false;
+    next.walls.left = false;
+  } else if (dx === -1) {
+    current.walls.left = false;
+    next.walls.right = false;
+  }
+  
+  if (dy === 1) {
+    current.walls.bottom = false;
+    next.walls.top = false;
+  } else if (dy === -1) {
+    current.walls.top = false;
+    next.walls.bottom = false;
+  }
+};
+
 export const generateMaze = (): Cell[] => {
+  const COLS = 15;
+  const ROWS = 15;
   const newMaze: Cell[] = [];
-  for (let r = 0; r < 15; r++) {
-    for (let c = 0; c < 15; c++) {
+  
+  // Initialize grid with walls
+  for (let r = 0; r < ROWS; r++) {
+    for (let c = 0; c < COLS; c++) {
       newMaze.push({
         row: r,
         col: c,
@@ -14,6 +38,54 @@ export const generateMaze = (): Cell[] => {
       });
     }
   }
+  
+  // Depth-first search maze generation
+  const stack: Cell[] = [];
+  const getCell = (col: number, row: number) => 
+    newMaze.find(cell => cell.col === col && cell.row === row);
+  
+  const startCell = newMaze[0];
+  startCell.visited = true;
+  stack.push(startCell);
+  
+  while (stack.length > 0) {
+    const current = stack[stack.length - 1];
+    const neighbors = [];
+    
+    // Check all 4 directions
+    const directions = [
+      { dx: 0, dy: -1 }, // top
+      { dx: 1, dy: 0 },  // right
+      { dx: 0, dy: 1 },  // bottom
+      { dx: -1, dy: 0 }  // left
+    ];
+    
+    for (const dir of directions) {
+      const nextCol = current.col + dir.dx;
+      const nextRow = current.row + dir.dy;
+      
+      if (nextCol >= 0 && nextCol < COLS && 
+          nextRow >= 0 && nextRow < ROWS) {
+        const neighbor = getCell(nextCol, nextRow);
+        if (neighbor && !neighbor.visited) {
+          neighbors.push(neighbor);
+        }
+      }
+    }
+    
+    if (neighbors.length > 0) {
+      const next = neighbors[Math.floor(Math.random() * neighbors.length)];
+      next.visited = true;
+      removeWalls(current, next);
+      stack.push(next);
+    } else {
+      stack.pop();
+    }
+  }
+  
+  // Reset visited property as it's no longer needed
+  newMaze.forEach(cell => cell.visited = false);
+  
   return newMaze;
 };
 

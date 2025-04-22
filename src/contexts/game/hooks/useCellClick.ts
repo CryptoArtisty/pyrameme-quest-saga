@@ -24,6 +24,14 @@ export const useCellClick = ({
   movePlayerToCell,
   toast
 }: UseCellClickProps) => {
+  const checkWall = (fromCell: Cell, toCol: number, toRow: number): boolean => {
+    if (toCol > fromCell.col) return !fromCell.walls.right;
+    if (toCol < fromCell.col) return !fromCell.walls.left;
+    if (toRow > fromCell.row) return !fromCell.walls.bottom;
+    if (toRow < fromCell.row) return !fromCell.walls.top;
+    return true;
+  };
+
   const onCellClick = useCallback((col: number, row: number) => {
     if (gameState.gameOver) return;
     
@@ -58,6 +66,14 @@ export const useCellClick = ({
         const currentCell = maze.find(cell => cell.col === player.col && cell.row === player.row);
         if (!currentCell) return;
         
+        if (!checkWall(currentCell, col, row)) {
+          toast({
+            title: "Can't Move There",
+            description: "There's a wall in the way!",
+          });
+          return;
+        }
+        
         movePlayerToCell(col, row);
       }
     }
@@ -65,3 +81,4 @@ export const useCellClick = ({
 
   return { onCellClick };
 };
+
