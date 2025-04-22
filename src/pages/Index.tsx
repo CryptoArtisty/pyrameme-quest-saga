@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { GameProvider } from '@/contexts/game/GameContext';
+import { GameProvider } from '@/contexts/game/GameContextProvider';
 import { GameContent } from '@/components/game/GameContent';
 
 const Index = () => {
