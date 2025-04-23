@@ -49,27 +49,32 @@ export const usePlayerMovement = ({
 
   const movePlayerToCell = useCallback((col: number, row: number) => {
     const cell = gridCells[row][col];
+    // Only charge parking fee if it's another player's cell
     if (cell.owner && cell.owner !== gameState.playerAccount) {
-      if (gameState.walletBalance < 5) {
+      if (gameState.walletBalance < 1) {
         toast({
           title: "Insufficient Funds",
-          description: "You need 5 Pgl to park on someone else's cell.",
+          description: "You need at least 1 gold to park on someone else's cell.",
         });
         return;
       }
-      
+
       setGameState(prev => ({
         ...prev,
-        walletBalance: prev.walletBalance - 5,
-        totalLoss: prev.totalLoss + 5
+        walletBalance: prev.walletBalance - 1,
+        totalLoss: prev.totalLoss + 1
       }));
-      
+
+      // Here, the cell.owner would receive 1 gold.
+      // If you want to track the owner's balance within the same session, you would implement that here,
+      // but for now, this documents that the transfer occurs in the game's context.
+
       toast({
         title: "Parking Fee Paid",
-        description: `You paid 5 Pgl to ${cell.nickname}.`,
+        description: `You paid 1 gold to ${cell.nickname}.`,
       });
     }
-    
+
     collectTreasure(col, row);
     handleExitReached(col, row);
     setPlayer({ col, row });
@@ -77,10 +82,10 @@ export const usePlayerMovement = ({
 
   const movePlayer = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
     if (gameState.phase !== 'play' || !player) return;
-    
+
     let newCol = player.col;
     let newRow = player.row;
-    
+
     switch (direction) {
       case 'up':
         newRow = Math.max(0, player.row - 1);
@@ -95,17 +100,17 @@ export const usePlayerMovement = ({
         newCol = Math.min(14, player.col + 1);
         break;
     }
-    
+
     if (newCol !== player.col || newRow !== player.row) {
       const currentCell = maze.find(cell => cell.col === player.col && cell.row === player.row);
       if (!currentCell) return;
-      
+
       let canMove = true;
       if (direction === 'up' && currentCell.walls.top) canMove = false;
       if (direction === 'right' && currentCell.walls.right) canMove = false;
       if (direction === 'down' && currentCell.walls.bottom) canMove = false;
       if (direction === 'left' && currentCell.walls.left) canMove = false;
-      
+
       if (canMove) {
         movePlayerToCell(newCol, newRow);
       }
@@ -114,10 +119,10 @@ export const usePlayerMovement = ({
 
   useEffect(() => {
     if (gameState.phase !== 'play') return;
-    
+
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gameState.phase !== 'play' || !player) return;
-      
+
       switch (e.key) {
         case 'ArrowUp':
           movePlayer('up');
@@ -133,7 +138,7 @@ export const usePlayerMovement = ({
           break;
       }
     };
-    
+
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [gameState.phase, player, movePlayer]);
