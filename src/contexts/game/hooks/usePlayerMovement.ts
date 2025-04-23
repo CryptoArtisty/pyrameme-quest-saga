@@ -4,6 +4,7 @@ import { Cell, PlayerPosition, GridCell } from '@/types/game';
 import { GameStateType } from '../types';
 import { useTreasureCollection } from './useTreasureCollection';
 import { useExitCell } from './useExitCell';
+import { processParking } from '@/lib/goldEconomy';
 
 interface UsePlayerMovementProps {
   gameState: GameStateType;
@@ -49,30 +50,34 @@ export const usePlayerMovement = ({
 
   const movePlayerToCell = useCallback((col: number, row: number) => {
     const cell = gridCells[row][col];
-    // Only charge parking fee if it's another player's cell
-    if (cell.owner && cell.owner !== gameState.playerAccount) {
-      if (gameState.walletBalance < 1) {
+    // Only charge parking fee if cell has an owner (any owner)
+    if (cell.owner) {
+      const isOwnCell = cell.owner === gameState.playerAccount;
+      
+      // Skip parking fee if player owns the cell
+      if (!isOwnCell) {
+        if (gameState.walletBalance < 1) {
+          toast({
+            title: "Insufficient Funds",
+            description: "You need at least 1 gold to park on someone else's cell.",
+          });
+          return;
+        }
+
+        setGameState(prev => ({
+          ...prev,
+          walletBalance: prev.walletBalance - 1,
+          totalLoss: prev.totalLoss + 1
+        }));
+
+        // Process the parking fee - send to cell owner or treasury
+        processParking(1, cell.owner);
+
         toast({
-          title: "Insufficient Funds",
-          description: "You need at least 1 gold to park on someone else's cell.",
+          title: "Parking Fee Paid",
+          description: `You paid 1 gold to ${cell.nickname || 'parking fee collector'}.`,
         });
-        return;
       }
-
-      setGameState(prev => ({
-        ...prev,
-        walletBalance: prev.walletBalance - 1,
-        totalLoss: prev.totalLoss + 1
-      }));
-
-      // Here, the cell.owner would receive 1 gold.
-      // If you want to track the owner's balance within the same session, you would implement that here,
-      // but for now, this documents that the transfer occurs in the game's context.
-
-      toast({
-        title: "Parking Fee Paid",
-        description: `You paid 1 gold to ${cell.nickname}.`,
-      });
     }
 
     collectTreasure(col, row);

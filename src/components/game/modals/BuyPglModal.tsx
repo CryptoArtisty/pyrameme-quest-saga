@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useGame } from '@/contexts/game/GameContext';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, Anchor } from 'lucide-react';
+import { ExternalLink, Anchor, ArrowRightLeft } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -17,28 +17,40 @@ import {
   TabsList,
   TabsTrigger,
 } from '@/components/ui/tabs';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { GOLD_TO_PGL_RATE } from '@/lib/goldEconomy';
 
 export const BuyPglModal = () => {
-  const { activeModal, showModal, buyPgl } = useGame();
+  const { activeModal, showModal, buyPgl, convertGoldToPGL, gameState } = useGame();
+  const [conversionAmount, setConversionAmount] = useState<number>(1000);
+  const [tab, setTab] = useState<string>("pgl");
 
   const openAlcorExchange = () => {
     window.open('https://alcor.exchange/', '_blank', 'noopener,noreferrer');
+  };
+  
+  const handleConvert = async () => {
+    if (conversionAmount > 0) {
+      await convertGoldToPGL(conversionAmount);
+    }
   };
 
   return (
     <Dialog open={activeModal === 'buy'} onOpenChange={(open) => !open && showModal(null)}>
       <DialogContent className="bg-dark text-gold border-gold">
         <DialogHeader>
-          <DialogTitle>Buy Gold</DialogTitle>
+          <DialogTitle>Gold & PGL Management</DialogTitle>
           <DialogDescription className="text-sand">
-            Exchange WAX or PGL tokens for gold coins
+            Buy gold with WAX or PGL tokens, or convert your gold to PGL
           </DialogDescription>
         </DialogHeader>
         
-        <Tabs defaultValue="pgl">
-          <TabsList className="grid w-full grid-cols-2 bg-brown/30">
-            <TabsTrigger value="pgl" className="data-[state=active]:bg-gold data-[state=active]:text-dark">PGL</TabsTrigger>
-            <TabsTrigger value="wax" className="data-[state=active]:bg-gold data-[state=active]:text-dark">WAX</TabsTrigger>
+        <Tabs defaultValue="pgl" value={tab} onValueChange={setTab}>
+          <TabsList className="grid w-full grid-cols-3 bg-brown/30">
+            <TabsTrigger value="pgl" className="data-[state=active]:bg-gold data-[state=active]:text-dark">Buy with PGL</TabsTrigger>
+            <TabsTrigger value="wax" className="data-[state=active]:bg-gold data-[state=active]:text-dark">Buy with WAX</TabsTrigger>
+            <TabsTrigger value="convert" className="data-[state=active]:bg-gold data-[state=active]:text-dark">Convert to PGL</TabsTrigger>
           </TabsList>
           
           <TabsContent value="pgl" className="py-4 space-y-4">
@@ -85,6 +97,42 @@ export const BuyPglModal = () => {
                 className="bg-gold text-dark hover:bg-gold/80"
               >
                 Buy 50,000 gold (10 WAX)
+              </Button>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="convert" className="py-4 space-y-4">
+            <p>Exchange Rate: {GOLD_TO_PGL_RATE} gold = 1 PGL</p>
+            <p>Current Balance: {gameState.walletBalance} gold</p>
+            
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 gap-2">
+                <Label htmlFor="goldAmount">Gold Amount to Convert</Label>
+                <Input 
+                  id="goldAmount" 
+                  type="number" 
+                  min={GOLD_TO_PGL_RATE}
+                  step={GOLD_TO_PGL_RATE}
+                  value={conversionAmount}
+                  onChange={(e) => setConversionAmount(Number(e.target.value))}
+                  className="bg-dark border-gold text-gold"
+                />
+              </div>
+              
+              <div className="flex items-center justify-between py-2">
+                <div>
+                  <p className="text-sm">You'll receive:</p>
+                  <p className="text-lg font-bold">{(conversionAmount / GOLD_TO_PGL_RATE).toFixed(3)} PGL</p>
+                </div>
+                <ArrowRightLeft className="h-6 w-6" />
+              </div>
+              
+              <Button 
+                onClick={handleConvert}
+                disabled={conversionAmount <= 0 || gameState.walletBalance < conversionAmount}
+                className="w-full bg-gold text-dark hover:bg-gold/80"
+              >
+                Convert to PGL
               </Button>
             </div>
           </TabsContent>

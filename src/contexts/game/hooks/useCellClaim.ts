@@ -1,6 +1,7 @@
 
 import { GameStateType } from '../types';
 import { GridCell } from '@/types/game';
+import { processCellClaim, DEVELOPER_ACCOUNT } from '@/lib/goldEconomy';
 
 interface UseCellClaimProps {
   gameState: GameStateType;
@@ -40,6 +41,9 @@ export const useCellClaim = ({
         return false;
       }
       
+      // Process the cell claim payment distribution
+      const { treasuryAmount, developerAmount } = processCellClaim(cost);
+      
       setGameState(prev => ({
         ...prev,
         walletBalance: prev.walletBalance - cost,
@@ -63,8 +67,11 @@ export const useCellClaim = ({
       
       toast({
         title: "Cell Claimed!",
-        description: `You've successfully claimed this cell for ${cost} gold.`,
+        description: `You've successfully claimed this cell for ${cost} gold. ${treasuryAmount} gold added to the treasury and ${developerAmount} gold sent to the developer.`,
       });
+      
+      // In a real implementation, this would trigger a blockchain transaction
+      console.log(`Sent ${developerAmount} gold to developer account: ${DEVELOPER_ACCOUNT}`);
       
       return true;
     } catch (error) {

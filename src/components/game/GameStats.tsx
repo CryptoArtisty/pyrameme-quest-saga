@@ -2,7 +2,8 @@
 import React from 'react';
 import { useGame } from '@/contexts/game/GameContext';
 import { Card, CardContent } from '@/components/ui/card';
-import { Wallet } from 'lucide-react';
+import { Wallet, Landmark } from 'lucide-react';
+import { getTreasuryBalance } from '@/lib/goldEconomy';
 
 const formatTime = (seconds: number) => {
   if (isNaN(seconds) || seconds < 0) return "0:00";
@@ -15,6 +16,7 @@ const formatTime = (seconds: number) => {
 
 export const GameStats = () => {
   const { gameState } = useGame();
+  const treasuryBalance = getTreasuryBalance();
 
   return (
     <div className="flex flex-wrap justify-center gap-4 m-5">
@@ -33,6 +35,14 @@ export const GameStats = () => {
           <span>
             <Wallet className="inline mr-2 h-4 w-4" />
             {gameState.walletBalance} gold
+          </span>
+        </CardContent>
+      </Card>
+      <Card className="bg-black/70 border-2 border-gold">
+        <CardContent className="p-4">
+          <span>
+            <Landmark className="inline mr-2 h-4 w-4" />
+            Treasury: {treasuryBalance} gold
           </span>
         </CardContent>
       </Card>

@@ -40,6 +40,7 @@ export interface GameContextType {
   movePlayer: (direction: 'up' | 'down' | 'left' | 'right') => void;
   connectWallet: () => Promise<boolean>;
   buyPgl: (amount: number, currency?: 'pgl' | 'wax') => Promise<boolean>;
+  convertGoldToPGL: (goldAmount: number) => Promise<boolean>;
   toggleMenu: () => void;
   showModal: (modalName: string | null) => void;
   claimCell: (nickname: string, initials: string) => Promise<boolean>;
