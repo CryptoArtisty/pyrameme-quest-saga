@@ -5,6 +5,7 @@ import { convertGoldToPgl, GOLD_TO_PGL_RATE } from '@/lib/goldEconomy';
 
 interface UseWalletProps {
   isWalletConnected: boolean;
+  gameState: GameStateType;  // Added gameState to the props
   setIsWalletConnected: (connected: boolean) => void;
   setGameState: (state: React.SetStateAction<GameStateType>) => void;
   toast: any;
@@ -12,6 +13,7 @@ interface UseWalletProps {
 
 export const useWallet = ({
   isWalletConnected,
+  gameState,  // Receive gameState as a prop
   setIsWalletConnected,
   setGameState,
   toast

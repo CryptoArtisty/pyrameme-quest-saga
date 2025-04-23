@@ -1,4 +1,3 @@
-
 import React from 'react';
 import GameContext from './GameContext';
 import { useGameState } from './useGameState';
@@ -60,6 +59,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const { connectWallet, buyPgl, convertGoldToPGL } = useWallet({
     isWalletConnected,
+    gameState: state,
     setIsWalletConnected,
     setGameState,
     toast
