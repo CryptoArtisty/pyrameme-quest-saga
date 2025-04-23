@@ -1,3 +1,4 @@
+
 import React from 'react';
 import GameContext from './GameContext';
 import { useGameState } from './useGameState';
@@ -32,7 +33,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast
   } = gameState;
 
-  // Use the new sync hook
+  // Use the game sync hook
   useGameSync();
 
   const { movePlayer, movePlayerToCell } = usePlayerMovement({
@@ -49,7 +50,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast
   });
 
-  // Keep existing hook initializations
+  // Game timer hook
   useGameTimer({
     gameState: state,
     startPlayPhase,
@@ -95,7 +96,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast
   });
 
-  // Use direct actions hook instead of mechanics for consistency
+  // Use the game actions hook
   const { onCellClick } = useGameActions({
     gameState: state,
     player,
@@ -107,7 +108,6 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast
   });
 
-  // Use menu modal hook directly
   const { toggleMenu, showModal } = useMenuModal({
     isMenuOpen,
     setIsMenuOpen,
