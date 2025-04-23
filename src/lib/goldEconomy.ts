@@ -5,7 +5,7 @@
 // Smart contract wallet that manages the game's gold
 export const GAME_CONTRACT_ACCOUNT = "pyrameme.wam";
 // Developer wallet that receives a portion of the revenue
-export const DEVELOPER_ACCOUNT = "devaccount.wam";
+export const DEVELOPER_ACCOUNT = "devaccount.wam"; // This should be replaced with the actual developer account
 
 // Revenue distribution percentages
 export const TREASURE_REVENUE_PERCENT = 50;

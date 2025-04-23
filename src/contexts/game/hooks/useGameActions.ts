@@ -24,6 +24,15 @@ export const useGameActions = ({
   movePlayerToCell,
   toast
 }: UseGameActionsProps) => {
+  // Helper function to check if there's a wall between cells
+  const checkWall = (fromCell: Cell, toCol: number, toRow: number): boolean => {
+    if (toCol > fromCell.col) return !fromCell.walls.right;
+    if (toCol < fromCell.col) return !fromCell.walls.left;
+    if (toRow > fromCell.row) return !fromCell.walls.bottom;
+    if (toRow < fromCell.row) return !fromCell.walls.top;
+    return true;
+  };
+
   const onCellClick = useCallback((col: number, row: number) => {
     if (gameState.gameOver) return;
     
@@ -58,16 +67,15 @@ export const useGameActions = ({
         const currentCell = maze.find(cell => cell.col === player.col && cell.row === player.row);
         if (!currentCell) return;
         
-        let canMove = true;
-        
-        if (canMove) {
-          movePlayerToCell(col, row);
-        } else {
+        if (!checkWall(currentCell, col, row)) {
           toast({
             title: "Can't Move There",
             description: "There's a wall in the way!",
           });
+          return;
         }
+        
+        movePlayerToCell(col, row);
       }
     }
   }, [gameState, player, maze, gridCells, setClaimTarget, setActiveModal, movePlayerToCell, toast]);

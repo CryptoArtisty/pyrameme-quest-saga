@@ -8,7 +8,7 @@ import { useWallet } from './hooks/useWallet';
 import { useHint } from './hooks/useHint';
 import { useCellClaim } from './hooks/useCellClaim';
 import { useGameInit } from './hooks/useGameInit';
-import { useGameMechanics } from './hooks/useGameMechanics';
+import { useMenuModal } from './hooks/useMenuModal';
 import { useGameSync } from './hooks/useGameSync';
 
 export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -95,7 +95,8 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast
   });
 
-  const { onCellClick, toggleMenu, showModal } = useGameMechanics({
+  // Use direct actions hook instead of mechanics for consistency
+  const { onCellClick } = useGameActions({
     gameState: state,
     player,
     maze,
@@ -103,9 +104,14 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setClaimTarget,
     setActiveModal,
     movePlayerToCell,
+    toast
+  });
+
+  // Use menu modal hook directly
+  const { toggleMenu, showModal } = useMenuModal({
     isMenuOpen,
     setIsMenuOpen,
-    toast
+    setActiveModal
   });
 
   const contextValue = {
