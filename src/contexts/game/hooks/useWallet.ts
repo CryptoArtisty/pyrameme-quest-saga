@@ -1,7 +1,8 @@
 
+
 import { useCallback } from 'react';
 import { GameStateType } from '../types';
-import { convertGoldToPgl, GOLD_TO_PGL_RATE } from '@/lib/goldEconomy';
+import { convertGoldToPgl } from '@/lib/goldEconomy';
 
 interface UseWalletProps {
   isWalletConnected: boolean;
@@ -137,3 +138,5 @@ export const useWallet = ({
 
   return { connectWallet, buyPgl, convertGoldToPGL };
 };
+
+
