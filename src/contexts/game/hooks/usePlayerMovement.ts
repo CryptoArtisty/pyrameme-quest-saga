@@ -98,7 +98,7 @@ export const usePlayerMovement = ({
     handleExitReached(col, row);
     setPlayer({ col, row });
     
-    console.log("Player position updated:", col, row);
+    console.log("Player position updated to:", col, row);
   }, [gameState, player, gridCells, collectTreasure, handleExitReached, setGameState, setPlayer, toast]);
 
   // Helper function to get cell from maze
@@ -153,21 +153,24 @@ export const usePlayerMovement = ({
     }
 
     // Check if new position is different from current position
-    if (newCol !== player.col || newRow !== player.row) {
-      console.log("Checking wall for direction:", direction);
-      const canMove = checkWall(player.col, player.row, direction);
-      console.log("Can move:", canMove);
+    if (newCol === player.col && newRow === player.row) {
+      console.log("Already at edge, can't move in that direction");
+      return;
+    }
+    
+    console.log("Checking wall for direction:", direction);
+    const canMove = checkWall(player.col, player.row, direction);
+    console.log("Can move:", canMove);
 
-      if (canMove) {
-        console.log("Moving to new position:", newCol, newRow);
-        movePlayerToCell(newCol, newRow);
-      } else {
-        console.log("Cannot move: wall in the way");
-        toast({
-          title: "Can't Move There",
-          description: "There's a wall in the way!",
-        });
-      }
+    if (canMove) {
+      console.log("Moving to new position:", newCol, newRow);
+      movePlayerToCell(newCol, newRow);
+    } else {
+      console.log("Cannot move: wall in the way");
+      toast({
+        title: "Can't Move There",
+        description: "There's a wall in the way!",
+      });
     }
   }, [gameState.phase, player, checkWall, movePlayerToCell, toast]);
 

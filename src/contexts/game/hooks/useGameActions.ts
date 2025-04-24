@@ -34,11 +34,13 @@ export const useGameActions = ({
       return false;
     }
     
-    if (toCol > fromCol) return !fromCell.walls.right;
-    if (toCol < fromCol) return !fromCell.walls.left;
-    if (toRow > fromRow) return !fromCell.walls.bottom;
-    if (toRow < fromRow) return !fromCell.walls.top;
-    return true;
+    // Determine which wall we're checking based on movement direction
+    if (toCol > fromCol) return !fromCell.walls.right;  // Moving right
+    if (toCol < fromCol) return !fromCell.walls.left;   // Moving left
+    if (toRow > fromRow) return !fromCell.walls.bottom; // Moving down
+    if (toRow < fromRow) return !fromCell.walls.top;    // Moving up
+    
+    return true; // Same cell, no wall
   };
 
   const onCellClick = useCallback((col: number, row: number) => {
@@ -62,7 +64,10 @@ export const useGameActions = ({
       
       setClaimTarget({col, row});
       setActiveModal("claim");
-    } else if (gameState.phase === 'play' && player) {
+      return;
+    } 
+    
+    if (gameState.phase === 'play' && player) {
       console.log("In play phase, checking if player can move to clicked cell", player);
       
       // Check if the clicked cell is adjacent to the player
@@ -70,9 +75,11 @@ export const useGameActions = ({
       const dy = Math.abs(row - player.row);
       console.log("Distance check - dx:", dx, "dy:", dy);
       
+      // Check if clicked cell is adjacent (one step horizontally OR vertically, not both)
       if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
         console.log("Cell is adjacent, checking for walls");
         
+        // Check if there's a wall between the current and target cells
         const canMove = checkWall(player.col, player.row, col, row);
         console.log("Can move:", canMove);
         
@@ -88,7 +95,7 @@ export const useGameActions = ({
         console.log("No wall detected, moving player to:", col, row);
         movePlayerToCell(col, row);
       } else {
-        console.log("Cell is not adjacent to player");
+        console.log("Cell is not adjacent to player", dx, dy);
         toast({
           title: "Invalid Move",
           description: "You can only move to adjacent cells.",
