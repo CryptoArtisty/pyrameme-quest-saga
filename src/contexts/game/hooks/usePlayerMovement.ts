@@ -1,10 +1,11 @@
 
 import { useCallback, useEffect } from 'react';
-import { Cell, PlayerPosition, GridCell } from '@/types/game';
+import { PlayerPosition } from '@/types/game';
 import { GameStateType } from '../types';
 import { useTreasureCollection } from './useTreasureCollection';
 import { useExitCell } from './useExitCell';
-import { processParking } from '@/lib/goldEconomy';
+import { usePlayerCellMovement } from './usePlayerCellMovement';
+import { useWallChecker } from './useWallChecker';
 
 interface UsePlayerMovementProps {
   gameState: GameStateType;
@@ -48,82 +49,18 @@ export const usePlayerMovement = ({
     toast
   });
 
-  const movePlayerToCell = useCallback((col: number, row: number) => {
-    if (!player) {
-      console.log("Cannot move player: player is null");
-      return;
-    }
-    
-    console.log("Moving player to cell:", col, row);
-    
-    // Make sure the cell exists in the grid
-    if (!gridCells[row] || !gridCells[row][col]) {
-      console.log("Target cell doesn't exist in the grid");
-      return;
-    }
-    
-    const cell = gridCells[row][col];
-    
-    // Only charge parking fee if cell has an owner (any owner)
-    if (cell.owner) {
-      const isOwnCell = cell.owner === gameState.playerAccount;
-      
-      // Skip parking fee if player owns the cell
-      if (!isOwnCell) {
-        if (gameState.walletBalance < 1) {
-          toast({
-            title: "Insufficient Funds",
-            description: "You need at least 1 gold to park on someone else's cell.",
-          });
-          return;
-        }
+  const { movePlayerToCell } = usePlayerCellMovement({
+    gameState,
+    player,
+    gridCells,
+    collectTreasure,
+    handleExitReached,
+    setGameState,
+    setPlayer,
+    toast
+  });
 
-        setGameState(prev => ({
-          ...prev,
-          walletBalance: prev.walletBalance - 1,
-          totalLoss: prev.totalLoss + 1
-        }));
-
-        // Process the parking fee - send to cell owner or treasury
-        processParking(1, cell.owner);
-
-        toast({
-          title: "Parking Fee Paid",
-          description: `You paid 1 gold to ${cell.nickname || 'parking fee collector'}.`,
-        });
-      }
-    }
-
-    collectTreasure(col, row);
-    handleExitReached(col, row);
-    setPlayer({ col, row });
-    
-    console.log("Player position updated to:", col, row);
-  }, [gameState, player, gridCells, collectTreasure, handleExitReached, setGameState, setPlayer, toast]);
-
-  // Helper function to get cell from maze
-  const getCellFromMaze = useCallback((col: number, row: number) => {
-    return maze.find(cell => cell.col === col && cell.row === row);
-  }, [maze]);
-
-  // Helper function to check if there's a wall in the requested direction
-  const checkWall = useCallback((fromCol: number, fromRow: number, direction: 'up' | 'down' | 'left' | 'right'): boolean => {
-    console.log(`Checking for wall from (${fromCol}, ${fromRow}) in direction: ${direction}`);
-    
-    const fromCell = getCellFromMaze(fromCol, fromRow);
-    if (!fromCell) {
-      console.log("Source cell not found in maze");
-      return false;
-    }
-    
-    switch (direction) {
-      case 'up': return !fromCell.walls.top;
-      case 'right': return !fromCell.walls.right;
-      case 'down': return !fromCell.walls.bottom;
-      case 'left': return !fromCell.walls.left;
-      default: return false;
-    }
-  }, [getCellFromMaze]);
+  const { checkWall } = useWallChecker(maze);
 
   const movePlayer = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
     if (gameState.phase !== 'play' || !player) {
@@ -136,7 +73,6 @@ export const usePlayerMovement = ({
     let newCol = player.col;
     let newRow = player.row;
 
-    // Calculate new position based on direction
     switch (direction) {
       case 'up':
         newRow = Math.max(0, player.row - 1);
@@ -152,7 +88,6 @@ export const usePlayerMovement = ({
         break;
     }
 
-    // Check if new position is different from current position
     if (newCol === player.col && newRow === player.row) {
       console.log("Already at edge, can't move in that direction");
       return;
