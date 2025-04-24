@@ -86,6 +86,14 @@ export const generateMaze = (): Cell[] => {
   // Reset visited property as it's no longer needed
   newMaze.forEach(cell => cell.visited = false);
   
+  // Debug output for maze walls
+  console.log("Maze generation complete. Example cells:");
+  for (let i = 0; i < 3; i++) {
+    const randomIndex = Math.floor(Math.random() * newMaze.length);
+    console.log(`Cell (${newMaze[randomIndex].col}, ${newMaze[randomIndex].row}) walls:`, 
+      newMaze[randomIndex].walls);
+  }
+  
   return newMaze;
 };
 

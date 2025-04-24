@@ -1,3 +1,4 @@
+
 import React from 'react';
 import GameContext from './GameContext';
 import { useGameState } from './useGameState';
@@ -96,7 +97,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast
   });
 
-  // Use the game actions hook
+  // Use the game actions hook for cell clicks
   const { onCellClick } = useGameActions({
     gameState: state,
     player,

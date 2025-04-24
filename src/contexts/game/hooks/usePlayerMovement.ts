@@ -49,9 +49,19 @@ export const usePlayerMovement = ({
   });
 
   const movePlayerToCell = useCallback((col: number, row: number) => {
-    if (!player) return; // Safety check
+    if (!player) {
+      console.log("Cannot move player: player is null");
+      return;
+    }
     
     console.log("Moving player to cell:", col, row);
+    
+    // Make sure the cell exists in the grid
+    if (!gridCells[row] || !gridCells[row][col]) {
+      console.log("Target cell doesn't exist in the grid");
+      return;
+    }
+    
     const cell = gridCells[row][col];
     
     // Only charge parking fee if cell has an owner (any owner)
@@ -96,8 +106,16 @@ export const usePlayerMovement = ({
     return maze.find(cell => cell.col === col && cell.row === row);
   }, [maze]);
 
-  // Helper function to check wall
-  const checkWall = useCallback((fromCell: Cell, direction: 'up' | 'down' | 'left' | 'right'): boolean => {
+  // Helper function to check if there's a wall in the requested direction
+  const checkWall = useCallback((fromCol: number, fromRow: number, direction: 'up' | 'down' | 'left' | 'right'): boolean => {
+    console.log(`Checking for wall from (${fromCol}, ${fromRow}) in direction: ${direction}`);
+    
+    const fromCell = getCellFromMaze(fromCol, fromRow);
+    if (!fromCell) {
+      console.log("Source cell not found in maze");
+      return false;
+    }
+    
     switch (direction) {
       case 'up': return !fromCell.walls.top;
       case 'right': return !fromCell.walls.right;
@@ -105,7 +123,7 @@ export const usePlayerMovement = ({
       case 'left': return !fromCell.walls.left;
       default: return false;
     }
-  }, []);
+  }, [getCellFromMaze]);
 
   const movePlayer = useCallback((direction: 'up' | 'down' | 'left' | 'right') => {
     if (gameState.phase !== 'play' || !player) {
@@ -113,7 +131,7 @@ export const usePlayerMovement = ({
       return;
     }
 
-    console.log("Attempting to move player in direction:", direction);
+    console.log("Attempting to move player in direction:", direction, "from position:", player);
     
     let newCol = player.col;
     let newRow = player.row;
@@ -136,14 +154,8 @@ export const usePlayerMovement = ({
 
     // Check if new position is different from current position
     if (newCol !== player.col || newRow !== player.row) {
-      const currentCell = getCellFromMaze(player.col, player.row);
-      if (!currentCell) {
-        console.log("Current cell not found in maze");
-        return;
-      }
-
       console.log("Checking wall for direction:", direction);
-      const canMove = checkWall(currentCell, direction);
+      const canMove = checkWall(player.col, player.row, direction);
       console.log("Can move:", canMove);
 
       if (canMove) {
@@ -157,7 +169,7 @@ export const usePlayerMovement = ({
         });
       }
     }
-  }, [gameState.phase, player, getCellFromMaze, checkWall, movePlayerToCell, toast]);
+  }, [gameState.phase, player, checkWall, movePlayerToCell, toast]);
 
   useEffect(() => {
     if (gameState.phase !== 'play') return;
@@ -165,6 +177,8 @@ export const usePlayerMovement = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       if (gameState.phase !== 'play' || !player) return;
 
+      console.log("Key pressed:", e.key);
+      
       switch (e.key) {
         case 'ArrowUp':
           movePlayer('up');
@@ -181,8 +195,12 @@ export const usePlayerMovement = ({
       }
     };
 
+    console.log("Adding keyboard event listener");
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      console.log("Removing keyboard event listener");
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [gameState.phase, player, movePlayer]);
 
   return { movePlayer, movePlayerToCell };
