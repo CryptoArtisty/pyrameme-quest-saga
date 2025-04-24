@@ -1,8 +1,7 @@
-
 import { useState, useCallback } from 'react';
 import { GameStateType } from '../types';
 import { Cell, PlayerPosition, Treasure, GridCell } from '@/types/game';
-import { generateInitialGridCells } from '../gameUtils';
+import { generateInitialGridCells, generateMaze, generateRandomStartPosition, generateTreasures, generateRandomExit } from '../gameUtils';
 
 interface UseGameInitProps {
   defaultGameState: GameStateType;
@@ -42,9 +41,11 @@ export const useGameInit = ({
   };
 
   const initializeGame = useCallback(() => {
+    console.log("Initializing new game");
     setGameState({
       ...defaultGameState,
-      startTime: Date.now()
+      startTime: Date.now(),
+      gameOver: false
     });
     
     const initialGridCells = generateInitialGridCells();
@@ -61,12 +62,13 @@ export const useGameInit = ({
     }
     
     toast({
-      title: "Game Initialized",
+      title: "New Game Started",
       description: "Claim your cells before time runs out!",
     });
   }, [defaultGameState, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell, setClaimTarget, setActiveModal, toast]);
 
   const newRound = useCallback(() => {
+    console.log("Starting new round");
     const currentGridCells = generateInitialGridCells();
     const startPosition = findPlayerStartPosition(currentGridCells);
 
@@ -82,10 +84,15 @@ export const useGameInit = ({
         playerAccount: prev.playerAccount,
         playerWaxWallet: prev.playerWaxWallet,
         phase: 'claim',
-        startTime: Date.now()
+        startTime: Date.now(),
+        gameOver: false
       }));
       return;
     }
+
+    const newMaze = generateMaze();
+    const newTreasures = generateTreasures();
+    const newExitCell = generateRandomExit();
 
     setGameState(prev => ({
       ...defaultGameState,
@@ -95,21 +102,23 @@ export const useGameInit = ({
       playerWaxWallet: prev.playerWaxWallet,
       phase: 'play',
       playerClaimed: true,
-      startTime: Date.now()
+      startTime: Date.now(),
+      gameOver: false
     }));
     
     setGridCells(currentGridCells);
-    setMaze([]);
+    setMaze(newMaze);
     setPlayer(startPosition);
-    setTreasures([]);
-    setExitCell(null);
+    setTreasures(newTreasures);
+    setExitCell(newExitCell);
     setClaimTarget(null);
+    setActiveModal(null);
     
     toast({
       title: "New Round Started",
       description: "Find treasures and reach the exit!",
     });
-  }, [defaultGameState, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell, setClaimTarget, toast]);
+  }, [defaultGameState, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell, setClaimTarget, setActiveModal, toast]);
 
   return {
     initializeGame,

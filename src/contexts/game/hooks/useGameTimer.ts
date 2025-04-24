@@ -16,8 +16,6 @@ export const useGameTimer = ({
   setGameState 
 }: UseGameTimerProps) => {
   useEffect(() => {
-    if (gameState.gameOver) return;
-
     const timer = setInterval(() => {
       const now = Date.now();
       const elapsed = Math.floor((now - gameState.startTime) / 1000);
@@ -31,13 +29,15 @@ export const useGameTimer = ({
       
       if (remaining <= 0) {
         if (gameState.phase === 'claim') {
+          console.log("Claim phase ended, starting play phase");
           startPlayPhase();
         } else {
+          console.log("Play phase ended, handling game over");
           handleGameOver();
         }
       }
     }, 1000);
     
     return () => clearInterval(timer);
-  }, [gameState.phase, gameState.startTime, gameState.gameOver, startPlayPhase, handleGameOver, setGameState]);
+  }, [gameState.phase, gameState.startTime, startPlayPhase, handleGameOver, setGameState]);
 };
