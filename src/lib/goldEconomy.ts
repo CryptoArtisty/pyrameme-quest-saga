@@ -1,11 +1,10 @@
-
 // Gold economy management for the Pyrameme game
 // This simulates interaction with a WAX blockchain smart contract
 
 // Smart contract wallet that manages the game's gold
 export const GAME_CONTRACT_ACCOUNT = "pyrameme.wam";
 // Developer wallet that receives a portion of the revenue
-export const DEVELOPER_ACCOUNT = "poptheballon"; // Updated with the provided testnet address
+export const DEVELOPER_ACCOUNT = "poptheballon"; // Using testnet address
 
 // Revenue distribution percentages
 export const TREASURE_REVENUE_PERCENT = 50;

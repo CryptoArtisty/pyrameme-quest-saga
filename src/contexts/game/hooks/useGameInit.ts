@@ -29,13 +29,26 @@ export const useGameInit = ({
   setActiveModal,
   toast
 }: UseGameInitProps) => {
+  const findPlayerStartPosition = (gridCells: GridCell[][]): PlayerPosition | null => {
+    for (let row = 0; row < gridCells.length; row++) {
+      for (let col = 0; col < gridCells[row].length; col++) {
+        const cell = gridCells[row][col];
+        if (cell.owner === defaultGameState.playerAccount) {
+          return { col, row };
+        }
+      }
+    }
+    return null;
+  };
+
   const initializeGame = useCallback(() => {
     setGameState({
       ...defaultGameState,
       startTime: Date.now()
     });
     
-    setGridCells(generateInitialGridCells());
+    const initialGridCells = generateInitialGridCells();
+    setGridCells(initialGridCells);
     setMaze([]);
     setPlayer(null);
     setTreasures([]);
@@ -54,25 +67,47 @@ export const useGameInit = ({
   }, [defaultGameState, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell, setClaimTarget, setActiveModal, toast]);
 
   const newRound = useCallback(() => {
+    const currentGridCells = generateInitialGridCells();
+    const startPosition = findPlayerStartPosition(currentGridCells);
+
+    if (!startPosition) {
+      toast({
+        title: "No Starting Position",
+        description: "You need to claim a cell first to start playing!",
+      });
+      setGameState(prev => ({
+        ...defaultGameState,
+        highScore: prev.highScore,
+        walletBalance: prev.walletBalance,
+        playerAccount: prev.playerAccount,
+        playerWaxWallet: prev.playerWaxWallet,
+        phase: 'claim',
+        startTime: Date.now()
+      }));
+      return;
+    }
+
     setGameState(prev => ({
       ...defaultGameState,
       highScore: prev.highScore,
       walletBalance: prev.walletBalance,
       playerAccount: prev.playerAccount,
       playerWaxWallet: prev.playerWaxWallet,
+      phase: 'play',
+      playerClaimed: true,
       startTime: Date.now()
     }));
     
-    setGridCells(generateInitialGridCells());
+    setGridCells(currentGridCells);
     setMaze([]);
-    setPlayer(null);
+    setPlayer(startPosition);
     setTreasures([]);
     setExitCell(null);
     setClaimTarget(null);
     
     toast({
       title: "New Round Started",
-      description: "Claim your cells before time runs out!",
+      description: "Find treasures and reach the exit!",
     });
   }, [defaultGameState, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell, setClaimTarget, toast]);
 

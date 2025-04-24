@@ -1,4 +1,3 @@
-
 import React from 'react';
 import GameContext from './GameContext';
 import { useGameState } from './useGameState';
@@ -80,6 +79,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setGridCells,
     setClaimTarget,
     setActiveModal,
+    setPlayer,
     toast
   });
 

@@ -9,6 +9,7 @@ interface UseCellClaimProps {
   setGridCells: (cells: React.SetStateAction<GridCell[][]>) => void;
   setClaimTarget: (target: { col: number; row: number } | null) => void;
   setActiveModal: (modal: string | null) => void;
+  setPlayer: (player: { col: number; row: number } | null) => void;
   toast: any;
 }
 
@@ -18,6 +19,7 @@ export const useCellClaim = ({
   setGridCells,
   setClaimTarget,
   setActiveModal,
+  setPlayer,
   toast
 }: UseCellClaimProps) => {
   const claimCell = async (nickname: string, initials: string): Promise<boolean> => {
@@ -49,7 +51,8 @@ export const useCellClaim = ({
         walletBalance: prev.walletBalance - cost,
         totalLoss: prev.totalLoss + cost,
         playerNickname: nickname,
-        playerClaimed: true
+        playerClaimed: true,
+        phase: 'play'
       }));
       
       setGridCells(prevCells => {
@@ -61,6 +64,9 @@ export const useCellClaim = ({
         };
         return newCells;
       });
+
+      // Set the claimed cell as the player's starting position
+      setPlayer({ col, row });
       
       setClaimTarget(null);
       setActiveModal(null);
