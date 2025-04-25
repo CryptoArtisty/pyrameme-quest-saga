@@ -32,8 +32,15 @@ export const useGameTimer = ({
           console.log("Claim phase ended, starting play phase");
           startPlayPhase();
         } else {
-          console.log("Play phase ended, handling game over");
-          handleGameOver();
+          console.log("Play phase ended, starting new round with claim phase");
+          setGameState(prev => ({
+            ...prev,
+            phase: 'claim',
+            playerClaimed: false,
+            startTime: Date.now(),
+            timeRemaining: 10,
+            gameOver: false
+          }));
         }
       }
     }, 1000);

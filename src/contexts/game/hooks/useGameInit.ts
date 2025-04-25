@@ -44,6 +44,8 @@ export const useGameInit = ({
     console.log("Initializing new game");
     setGameState({
       ...defaultGameState,
+      phase: 'claim',
+      playerClaimed: false,
       startTime: Date.now(),
       gameOver: false
     });
@@ -68,31 +70,15 @@ export const useGameInit = ({
   }, [defaultGameState, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell, setClaimTarget, setActiveModal, toast]);
 
   const newRound = useCallback(() => {
-    console.log("Starting new round");
-    const currentGridCells = generateInitialGridCells();
-    const startPosition = findPlayerStartPosition(currentGridCells);
-
-    if (!startPosition) {
-      toast({
-        title: "No Starting Position",
-        description: "You need to claim a cell first to start playing!",
-      });
-      setGameState(prev => ({
-        ...defaultGameState,
-        highScore: prev.highScore,
-        walletBalance: prev.walletBalance,
-        playerAccount: prev.playerAccount,
-        playerWaxWallet: prev.playerWaxWallet,
-        phase: 'claim',
-        startTime: Date.now(),
-        gameOver: false
-      }));
-      return;
-    }
-
-    const newMaze = generateMaze();
-    const newTreasures = generateTreasures();
-    const newExitCell = generateRandomExit();
+    console.log("Starting new round with claim phase");
+    const initialGridCells = generateInitialGridCells();
+    setGridCells(initialGridCells);
+    setMaze([]);
+    setPlayer(null);
+    setTreasures([]);
+    setExitCell(null);
+    setClaimTarget(null);
+    setActiveModal(null);
 
     setGameState(prev => ({
       ...defaultGameState,
@@ -100,23 +86,15 @@ export const useGameInit = ({
       walletBalance: prev.walletBalance,
       playerAccount: prev.playerAccount,
       playerWaxWallet: prev.playerWaxWallet,
-      phase: 'play',
-      playerClaimed: true,
+      phase: 'claim',
+      playerClaimed: false,
       startTime: Date.now(),
       gameOver: false
     }));
     
-    setGridCells(currentGridCells);
-    setMaze(newMaze);
-    setPlayer(startPosition);
-    setTreasures(newTreasures);
-    setExitCell(newExitCell);
-    setClaimTarget(null);
-    setActiveModal(null);
-    
     toast({
       title: "New Round Started",
-      description: "Find treasures and reach the exit!",
+      description: "Claim your cells before time runs out!",
     });
   }, [defaultGameState, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell, setClaimTarget, setActiveModal, toast]);
 

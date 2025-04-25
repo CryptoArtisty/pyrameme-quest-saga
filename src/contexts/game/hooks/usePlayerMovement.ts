@@ -1,6 +1,6 @@
 
 import { useCallback, useEffect } from 'react';
-import { PlayerPosition } from '@/types/game';
+import { PlayerPosition, Cell, GridCell } from '@/types/game';
 import { GameStateType } from '../types';
 import { useTreasureCollection } from './useTreasureCollection';
 import { useExitCell } from './useExitCell';
