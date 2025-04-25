@@ -32,14 +32,14 @@ export const useGameTimer = ({
           console.log("Claim phase ended, starting play phase");
           startPlayPhase();
         } else if (gameState.phase === 'play') {
-          console.log("Play phase ended, starting new round with claim phase");
+          console.log("Play phase ended, starting new claim phase");
+          // Reset to claim phase for the new round
           setGameState(prev => ({
             ...prev,
             phase: 'claim',
             playerClaimed: false,
             startTime: Date.now(),
-            timeRemaining: 10,
-            gameOver: false
+            timeRemaining: 10
           }));
         }
       }
