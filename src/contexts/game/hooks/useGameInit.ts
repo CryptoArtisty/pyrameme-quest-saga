@@ -1,3 +1,4 @@
+
 import { useState, useCallback } from 'react';
 import { GameStateType } from '../types';
 import { Cell, PlayerPosition, Treasure, GridCell } from '@/types/game';
@@ -47,6 +48,7 @@ export const useGameInit = ({
       phase: 'claim',
       playerClaimed: false,
       startTime: Date.now(),
+      timeRemaining: 10, // Set initial timer for claim phase
       gameOver: false
     });
     
@@ -89,6 +91,7 @@ export const useGameInit = ({
       phase: 'claim',
       playerClaimed: false,
       startTime: Date.now(),
+      timeRemaining: 10, // Set initial timer for claim phase
       gameOver: false
     }));
     

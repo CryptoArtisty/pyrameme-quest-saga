@@ -19,7 +19,7 @@ export const useGameTimer = ({
     const timer = setInterval(() => {
       const now = Date.now();
       const elapsed = Math.floor((now - gameState.startTime) / 1000);
-      const phaseTime = gameState.phase === 'claim' ? 10 : 120; // 2 minutes for play phase
+      const phaseTime = gameState.phase === 'claim' ? 10 : 120; // 10 seconds for claim, 2 minutes for play
       const remaining = Math.max(0, phaseTime - elapsed);
       
       setGameState(prev => ({
@@ -31,7 +31,7 @@ export const useGameTimer = ({
         if (gameState.phase === 'claim') {
           console.log("Claim phase ended, starting play phase");
           startPlayPhase();
-        } else {
+        } else if (gameState.phase === 'play') {
           console.log("Play phase ended, starting new round with claim phase");
           setGameState(prev => ({
             ...prev,
