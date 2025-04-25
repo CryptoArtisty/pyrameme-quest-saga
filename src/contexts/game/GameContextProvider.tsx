@@ -144,6 +144,13 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   return (
     <GameContext.Provider value={contextValue}>
+      {state.phase === 'countdown' && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="text-9xl font-bold text-gold animate-pulse">
+            {state.countdownValue}
+          </div>
+        </div>
+      )}
       {children}
     </GameContext.Provider>
   );

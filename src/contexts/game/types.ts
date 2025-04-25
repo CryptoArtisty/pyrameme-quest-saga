@@ -1,8 +1,7 @@
-
 import { Cell, PlayerPosition, Treasure, GridCell, Achievement, LeaderboardEntry } from '@/types/game';
 
 export interface GameStateType {
-  phase: "claim" | "play";
+  phase: "claim" | "play" | "countdown";
   score: number;
   highScore: number;
   walletBalance: number;
@@ -17,6 +16,7 @@ export interface GameStateType {
   startTime: number;
   activeModal: string | null;
   claimTarget: { col: number; row: number } | null;
+  countdownValue?: number;
 }
 
 export interface GameContextType {
