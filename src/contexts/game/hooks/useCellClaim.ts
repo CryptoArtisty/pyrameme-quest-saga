@@ -68,6 +68,7 @@ export const useCellClaim = ({
         
         // Set the cell owner and nickname
         newCells[row][col] = {
+          ...newCells[row]?.[col],
           owner: gameState.playerAccount || 'local-player',
           nickname: initials
         };
@@ -86,11 +87,12 @@ export const useCellClaim = ({
       
       toast({
         title: "Cell Claimed!",
-        description: `You've successfully claimed this cell for ${cost} gold. ${treasuryAmount} gold added to the treasury and ${developerAmount} gold sent to the developer.`,
+        description: `You've successfully claimed this cell for ${cost} gold.`,
       });
       
       // In a real implementation, this would trigger a blockchain transaction
       console.log(`Sent ${developerAmount} gold to developer account: ${DEVELOPER_ACCOUNT}`);
+      console.log(`Player token placed at position: col=${col}, row=${row}`);
       
       return true;
     } catch (error) {

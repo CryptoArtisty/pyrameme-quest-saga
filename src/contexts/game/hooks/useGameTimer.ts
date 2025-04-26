@@ -67,31 +67,34 @@ export const useGameTimer = ({
           if (gameState.phase === 'claim') {
             console.log("Claim phase ended, starting play phase");
             
-            // Only start play phase if player has claimed a cell
-            if (gameState.playerClaimed) {
-              startPlayPhase();
-            } else {
-              // If player hasn't claimed a cell yet, show a message and reset to countdown
-              const initialGridCells = generateInitialGridCells();
-              setGridCells(initialGridCells);
-              setMaze([]);
-              setTreasures([]);
-              setExitCell(null);
-              
-              setGameState(prev => ({
-                ...prev,
-                phase: 'countdown',
-                countdownValue: 3
-              }));
-            }
+            // Always transition to play phase, regardless of whether a player claimed a cell
+            startPlayPhase();
           } else if (gameState.phase === 'play') {
             console.log("Play phase ended, starting countdown");
             
             // Reset game state but keep player information
             const initialGridCells = generateInitialGridCells();
             
-            // Important: Don't reset the player position here
-            // We'll keep the same grid cells with claimed cells
+            // Keep existing claimed cells
+            setGridCells(prev => {
+              // Deep copy initial grid cells
+              const newCells = JSON.parse(JSON.stringify(initialGridCells));
+              
+              // Copy over any claimed cells from previous grid
+              for (let row = 0; row < prev.length; row++) {
+                if (!prev[row]) continue;
+                for (let col = 0; col < prev[row].length; col++) {
+                  if (prev[row][col] && prev[row][col].owner) {
+                    if (!newCells[row]) newCells[row] = [];
+                    newCells[row][col] = { ...prev[row][col] };
+                  }
+                }
+              }
+              
+              return newCells;
+            });
+            
+            // Clear maze but don't reset player position - that stays at claimed cell
             setMaze([]);
             setTreasures([]);
             setExitCell(null);
@@ -99,7 +102,8 @@ export const useGameTimer = ({
             setGameState(prev => ({
               ...prev,
               phase: 'countdown',
-              countdownValue: 3
+              countdownValue: 3,
+              score: 0 // Reset score for new round
             }));
           }
         }
@@ -107,5 +111,5 @@ export const useGameTimer = ({
     }
     
     return () => clearInterval(timer);
-  }, [gameState.phase, gameState.startTime, gameState.playerClaimed, startPlayPhase, handleGameOver, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell]);
+  }, [gameState.phase, gameState.startTime, startPlayPhase, handleGameOver, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell]);
 };

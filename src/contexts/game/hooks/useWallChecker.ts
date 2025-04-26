@@ -11,7 +11,7 @@ export const useWallChecker = (maze: Cell[]) => {
     const fromCell = findCell(fromCol, fromRow);
     if (!fromCell) {
       console.log("Source cell not found in maze at", fromCol, fromRow);
-      return false;
+      return true; // Allow movement if cell isn't in maze (at game start)
     }
 
     console.log("Checking wall from", fromCol, fromRow, "direction:", direction);
