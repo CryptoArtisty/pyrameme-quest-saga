@@ -1,4 +1,3 @@
-
 import React from 'react';
 import GameContext from './GameContext';
 import { useGameState } from './useGameState';
@@ -50,12 +49,17 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     toast
   });
 
-  // Game timer hook
+  // Use the game timer hook with all required props
   useGameTimer({
     gameState: state,
     startPlayPhase,
     handleGameOver,
-    setGameState
+    setGameState,
+    setGridCells,
+    setMaze,
+    setPlayer,
+    setTreasures,
+    setExitCell
   });
 
   const { connectWallet, buyPgl, convertGoldToPGL } = useWallet({
