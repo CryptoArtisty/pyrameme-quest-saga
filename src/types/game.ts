@@ -26,6 +26,8 @@ export interface Treasure {
 export interface PlayerPosition {
   col: number;
   row: number;
+  hasClaimed?: boolean; // Added to track if player claimed in current game
+  hasClaimedEver?: boolean; // Added to track if player has ever claimed a cell
 }
 
 export interface GameState {

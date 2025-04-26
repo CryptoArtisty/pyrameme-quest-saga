@@ -8,7 +8,7 @@ interface UseGameTimerProps {
   startPlayPhase: () => void;
   handleGameOver: () => void;
   setGameState: (state: React.SetStateAction<GameStateType>) => void;
-  setGridCells: (cells: GridCell[][]) => void;
+  setGridCells: (cells: React.SetStateAction<GridCell[][]>) => void;
   setMaze: (maze: Cell[]) => void;
   setPlayer: (player: PlayerPosition | null) => void;
   setTreasures: (treasures: Treasure[]) => void;
@@ -67,17 +67,28 @@ export const useGameTimer = ({
           if (gameState.phase === 'claim') {
             console.log("Claim phase ended, starting play phase");
             
+            // Before starting play phase, make sure to store the player's claim status
+            if (!gameState.playerClaimed) {
+              // If player has not claimed in this round, update their token appearance
+              setPlayer(prev => {
+                if (!prev) return null;
+                return {
+                  ...prev,
+                  hasClaimed: false // Player hasn't claimed in current game
+                  // Keep hasClaimedEver as it was
+                };
+              });
+            }
+            
             // Always transition to play phase, regardless of whether a player claimed a cell
             startPlayPhase();
           } else if (gameState.phase === 'play') {
             console.log("Play phase ended, starting countdown");
             
-            // Reset game state but keep player information
-            const initialGridCells = generateInitialGridCells();
-            
             // Keep existing claimed cells
             setGridCells(prev => {
               // Deep copy initial grid cells
+              const initialGridCells = generateInitialGridCells();
               const newCells = JSON.parse(JSON.stringify(initialGridCells));
               
               // Copy over any claimed cells from previous grid
@@ -111,5 +122,5 @@ export const useGameTimer = ({
     }
     
     return () => clearInterval(timer);
-  }, [gameState.phase, gameState.startTime, startPlayPhase, handleGameOver, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell]);
+  }, [gameState.phase, gameState.startTime, gameState.playerClaimed, startPlayPhase, handleGameOver, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell]);
 };

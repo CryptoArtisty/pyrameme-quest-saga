@@ -99,7 +99,10 @@ export const usePlayerMovement = ({
 
     if (canMove) {
       console.log("Moving to new position:", newCol, newRow);
-      movePlayerToCell(newCol, newRow);
+      
+      // Preserve the hasClaimed and hasClaimedEver properties
+      const { hasClaimed, hasClaimedEver } = player;
+      movePlayerToCell(newCol, newRow, { hasClaimed, hasClaimedEver });
     } else {
       console.log("Cannot move: wall in the way");
       toast({

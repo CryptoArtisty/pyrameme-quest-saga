@@ -154,14 +154,31 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ctx.fill();
       }
 
-      // Draw player - with enhanced visibility
+      // Draw player with different colors based on claimed status
       if (player) {
+        // Check if player has claimed a cell in the current game
+        const hasClaimedCurrently = player.hasClaimed !== undefined ? player.hasClaimed : false;
+        
+        // Check if player has ever claimed a cell (in any game)
+        const hasClaimedEver = player.hasClaimedEver !== undefined ? player.hasClaimedEver : true; 
+        
+        if (!hasClaimedEver) {
+          // Player has never claimed a cell, make token invisible
+          return;
+        }
+        
         // Create glowing effect for player
         ctx.shadowColor = "rgba(255,0,0,0.6)";
         ctx.shadowBlur = 10;
         
-        // Draw player as a red circle
-        ctx.fillStyle = "#ea384c"; // Bright red color
+        if (hasClaimedCurrently) {
+          // Red token for players who have claimed in current game
+          ctx.fillStyle = "#ea384c"; // Bright red color
+        } else {
+          // Grey token for players who have claimed before but not in current game
+          ctx.fillStyle = "#8E9196"; // Neutral grey color
+        }
+        
         ctx.beginPath();
         ctx.arc(
           player.col * CELL_SIZE + CELL_SIZE / 2,

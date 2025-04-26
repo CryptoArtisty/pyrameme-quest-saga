@@ -25,7 +25,7 @@ export const usePlayerCellMovement = ({
   setPlayer,
   toast
 }: UsePlayerCellMovementProps) => {
-  const movePlayerToCell = useCallback((col: number, row: number) => {
+  const movePlayerToCell = useCallback((col: number, row: number, additionalProps?: { hasClaimed?: boolean; hasClaimedEver?: boolean }) => {
     if (!player) {
       console.log("Cannot move player: player is null");
       return;
@@ -69,7 +69,15 @@ export const usePlayerCellMovement = ({
 
     collectTreasure(col, row);
     handleExitReached(col, row);
-    setPlayer({ col, row });
+    
+    // Set player position while preserving claim status properties
+    setPlayer({ 
+      col, 
+      row,
+      // Use provided properties or fall back to existing ones or defaults
+      hasClaimed: additionalProps?.hasClaimed !== undefined ? additionalProps.hasClaimed : player.hasClaimed,
+      hasClaimedEver: additionalProps?.hasClaimedEver !== undefined ? additionalProps.hasClaimedEver : (player.hasClaimedEver !== undefined ? player.hasClaimedEver : true)
+    });
     
     console.log("Player position updated to:", col, row);
   }, [gameState, player, gridCells, collectTreasure, handleExitReached, setGameState, setPlayer, toast]);

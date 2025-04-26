@@ -9,7 +9,7 @@ interface UseCellClaimProps {
   setGridCells: (cells: React.SetStateAction<GridCell[][]>) => void;
   setClaimTarget: (target: { col: number; row: number } | null) => void;
   setActiveModal: (modal: string | null) => void;
-  setPlayer: (player: { col: number; row: number } | null) => void;
+  setPlayer: (player: { col: number; row: number; hasClaimed?: boolean; hasClaimedEver?: boolean } | null) => void;
   toast: any;
 }
 
@@ -79,7 +79,13 @@ export const useCellClaim = ({
 
       // Set the claimed cell as the player's starting position
       // This is a key change - we're setting the player position immediately after claiming
-      setPlayer({ col, row });
+      // Also set hasClaimed and hasClaimedEver flags
+      setPlayer({ 
+        col, 
+        row,
+        hasClaimed: true,    // Player has claimed in current game
+        hasClaimedEver: true // Player has claimed at least once
+      });
       
       // Reset claim target and close modal
       setClaimTarget(null);
