@@ -52,6 +52,25 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
         ctx.stroke();
       }
 
+      // Draw claimed cells
+      if (gridCells) {
+        for (let r = 0; r < gridCells.length; r++) {
+          if (gridCells[r]) {
+            for (let c = 0; c < gridCells[r].length; c++) {
+              if (gridCells[r][c] && gridCells[r][c].owner) {
+                ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+                ctx.fillRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+                ctx.font = `bold ${CELL_SIZE / 2}px sans-serif`;
+                ctx.fillStyle = "#FFD700";
+                ctx.textAlign = "center";
+                ctx.textBaseline = "middle";
+                ctx.fillText(gridCells[r][c].nickname || "✓", c * CELL_SIZE + CELL_SIZE / 2, r * CELL_SIZE + CELL_SIZE / 2);
+              }
+            }
+          }
+        }
+      }
+
       // Draw maze walls with improved visibility
       if (maze && maze.length > 0) {
         maze.forEach((cell) => {
@@ -95,25 +114,6 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
       ctx.shadowColor = 'transparent';
       ctx.shadowBlur = 0;
 
-      // Draw claimed cells
-      if (gridCells) {
-        for (let r = 0; r < gridCells.length; r++) {
-          if (gridCells[r]) {
-            for (let c = 0; c < gridCells[r].length; c++) {
-              if (gridCells[r][c] && gridCells[r][c].owner) {
-                ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
-                ctx.fillRect(c * CELL_SIZE, r * CELL_SIZE, CELL_SIZE, CELL_SIZE);
-                ctx.font = `bold ${CELL_SIZE / 2}px sans-serif`;
-                ctx.fillStyle = "#FFD700";
-                ctx.textAlign = "center";
-                ctx.textBaseline = "middle";
-                ctx.fillText(gridCells[r][c].nickname || "✓", c * CELL_SIZE + CELL_SIZE / 2, r * CELL_SIZE + CELL_SIZE / 2);
-              }
-            }
-          }
-        }
-      }
-
       // Draw hint paths
       if (hintPaths.length > 0) {
         ctx.fillStyle = "rgba(0,255,255,0.3)";
@@ -140,26 +140,41 @@ const MazeCanvas: React.FC<MazeCanvasProps> = ({
         });
       }
 
-      // Draw player
-      if (player) {
-        ctx.fillStyle = "red";
-        ctx.fillRect(
-          player.col * CELL_SIZE + CELL_SIZE * 0.2,
-          player.row * CELL_SIZE + CELL_SIZE * 0.2,
-          CELL_SIZE * 0.6,
-          CELL_SIZE * 0.6
-        );
-      }
-
       // Draw exit
       if (exitCell) {
         ctx.fillStyle = "green";
-        ctx.fillRect(
-          exitCell.col * CELL_SIZE + CELL_SIZE * 0.2,
-          exitCell.row * CELL_SIZE + CELL_SIZE * 0.2,
-          CELL_SIZE * 0.6,
-          CELL_SIZE * 0.6
+        ctx.beginPath();
+        ctx.arc(
+          exitCell.col * CELL_SIZE + CELL_SIZE / 2,
+          exitCell.row * CELL_SIZE + CELL_SIZE / 2,
+          CELL_SIZE * 0.3,
+          0,
+          Math.PI * 2
         );
+        ctx.fill();
+      }
+
+      // Draw player - with enhanced visibility
+      if (player) {
+        // Create glowing effect for player
+        ctx.shadowColor = "rgba(255,0,0,0.6)";
+        ctx.shadowBlur = 10;
+        
+        // Draw player as a red circle
+        ctx.fillStyle = "#ea384c"; // Bright red color
+        ctx.beginPath();
+        ctx.arc(
+          player.col * CELL_SIZE + CELL_SIZE / 2,
+          player.row * CELL_SIZE + CELL_SIZE / 2,
+          CELL_SIZE * 0.3,
+          0,
+          Math.PI * 2
+        );
+        ctx.fill();
+        
+        // Reset shadow
+        ctx.shadowColor = "transparent";
+        ctx.shadowBlur = 0;
       }
     };
 

@@ -14,6 +14,9 @@ export const useWallChecker = (maze: Cell[]) => {
       return false;
     }
 
+    console.log("Checking wall from", fromCol, fromRow, "direction:", direction);
+    console.log("Cell walls:", fromCell.walls);
+
     // Check if there's a wall in the requested direction
     switch (direction) {
       case 'up':

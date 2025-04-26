@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { GameStateType } from '../types';
 import { generateInitialGridCells } from '../gameUtils';
@@ -67,13 +66,33 @@ export const useGameTimer = ({
         if (remaining <= 0) {
           if (gameState.phase === 'claim') {
             console.log("Claim phase ended, starting play phase");
-            startPlayPhase();
+            
+            // Only start play phase if player has claimed a cell
+            if (gameState.playerClaimed) {
+              startPlayPhase();
+            } else {
+              // If player hasn't claimed a cell yet, show a message and reset to countdown
+              const initialGridCells = generateInitialGridCells();
+              setGridCells(initialGridCells);
+              setMaze([]);
+              setTreasures([]);
+              setExitCell(null);
+              
+              setGameState(prev => ({
+                ...prev,
+                phase: 'countdown',
+                countdownValue: 3
+              }));
+            }
           } else if (gameState.phase === 'play') {
             console.log("Play phase ended, starting countdown");
+            
+            // Reset game state but keep player information
             const initialGridCells = generateInitialGridCells();
-            setGridCells(initialGridCells);
+            
+            // Important: Don't reset the player position here
+            // We'll keep the same grid cells with claimed cells
             setMaze([]);
-            setPlayer(null);
             setTreasures([]);
             setExitCell(null);
             
@@ -88,5 +107,5 @@ export const useGameTimer = ({
     }
     
     return () => clearInterval(timer);
-  }, [gameState.phase, gameState.startTime, startPlayPhase, handleGameOver, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell]);
+  }, [gameState.phase, gameState.startTime, gameState.playerClaimed, startPlayPhase, handleGameOver, setGameState, setGridCells, setMaze, setPlayer, setTreasures, setExitCell]);
 };

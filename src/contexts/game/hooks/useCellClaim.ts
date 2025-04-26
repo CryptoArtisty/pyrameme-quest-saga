@@ -77,6 +77,7 @@ export const useCellClaim = ({
       });
 
       // Set the claimed cell as the player's starting position
+      // This is a key change - we're setting the player position immediately after claiming
       setPlayer({ col, row });
       
       // Reset claim target and close modal
