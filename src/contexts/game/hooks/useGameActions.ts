@@ -53,7 +53,16 @@ export const useGameActions = ({
     
     if (gameState.phase === 'claim') {
       console.log("In claim phase, checking if cell can be claimed");
-      const isClaimed = gridCells[row]?.[col]?.owner !== null;
+      
+      // Make sure gridCells and the row exist
+      if (!gridCells || !gridCells[row]) {
+        console.log("gridCells or row doesn't exist", { gridCellsExists: !!gridCells, rowLength: gridCells?.length });
+        return;
+      }
+      
+      // Check if the cell is already claimed
+      const isClaimed = gridCells[row][col]?.owner !== undefined && gridCells[row][col]?.owner !== null;
+      
       if (isClaimed) {
         toast({
           title: "Cell Already Claimed",

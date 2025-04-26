@@ -1,3 +1,4 @@
+
 import { Cell, PlayerPosition, Treasure, GridCell, Achievement, LeaderboardEntry } from '@/types/game';
 
 export interface GameStateType {
@@ -8,6 +9,7 @@ export interface GameStateType {
   totalProfit: number;
   totalLoss: number;
   playerNickname: string;
+  playerInitials?: string; // Added for storing player's initials
   playerWaxWallet: string;
   playerAccount: string;
   playerClaimed: boolean;

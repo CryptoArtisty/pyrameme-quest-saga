@@ -28,6 +28,7 @@ export const useCellClaim = ({
     
     try {
       const { col, row } = target;
+      console.log("Claiming cell at:", col, row);
       
       // Check if the cell is on the edge of the grid
       const isEdge = row === 0 || row === 14 || col === 0 || col === 14;
@@ -46,28 +47,39 @@ export const useCellClaim = ({
       // Process the cell claim payment distribution
       const { treasuryAmount, developerAmount } = processCellClaim(cost);
       
+      // Update game state with new balance and player info
       setGameState(prev => ({
         ...prev,
         walletBalance: prev.walletBalance - cost,
         totalLoss: prev.totalLoss + cost,
         playerNickname: nickname,
-        playerClaimed: true,
-        phase: 'play'
+        playerInitials: initials,
+        playerClaimed: true
       }));
       
+      // Update grid cells with claimed cell
       setGridCells(prevCells => {
-        const newCells = [...prevCells];
-        if (!newCells[row]) newCells[row] = [];
+        const newCells = JSON.parse(JSON.stringify(prevCells)); // Deep copy
+        
+        // Ensure the row exists
+        if (!newCells[row]) {
+          newCells[row] = [];
+        }
+        
+        // Set the cell owner and nickname
         newCells[row][col] = {
           owner: gameState.playerAccount || 'local-player',
           nickname: initials
         };
+        
+        console.log("Updated grid cells:", newCells);
         return newCells;
       });
 
       // Set the claimed cell as the player's starting position
       setPlayer({ col, row });
       
+      // Reset claim target and close modal
       setClaimTarget(null);
       setActiveModal(null);
       
@@ -81,6 +93,7 @@ export const useCellClaim = ({
       
       return true;
     } catch (error) {
+      console.error("Error claiming cell:", error);
       toast({
         title: "Claim Failed",
         description: "Could not claim the cell.",
