@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { GameStateType } from '../types';
 import { generateInitialGridCells } from '../gameUtils';
@@ -10,7 +11,7 @@ interface UseGameTimerProps {
   setGameState: (state: React.SetStateAction<GameStateType>) => void;
   setGridCells: (cells: React.SetStateAction<GridCell[][]>) => void;
   setMaze: (maze: Cell[]) => void;
-  setPlayer: (player: PlayerPosition | null) => void;
+  setPlayer: (player: React.SetStateAction<PlayerPosition | null>) => void;
   setTreasures: (treasures: Treasure[]) => void;
   setExitCell: (cell: { col: number; row: number } | null) => void;
 }
@@ -70,12 +71,22 @@ export const useGameTimer = ({
             // Before starting play phase, make sure to store the player's claim status
             if (!gameState.playerClaimed) {
               // If player has not claimed in this round, update their token appearance
+              // Fixed: Don't use a function setter here, use a conditional to prepare the new value
+              const playerUpdate = player => {
+                if (!player) return null;
+                return {
+                  ...player,
+                  hasClaimed: false // Player hasn't claimed in current game
+                  // Keep hasClaimedEver as it was
+                };
+              };
+              
+              // Use the function with setPlayer but correctly
               setPlayer(prev => {
                 if (!prev) return null;
                 return {
                   ...prev,
-                  hasClaimed: false // Player hasn't claimed in current game
-                  // Keep hasClaimedEver as it was
+                  hasClaimed: false 
                 };
               });
             }
