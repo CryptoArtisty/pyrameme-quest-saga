@@ -47,7 +47,10 @@ export const useGameActions = ({
     console.log("Cell clicked:", col, row, "Current phase:", gameState.phase);
     
     if (gameState.gameOver) {
-      console.log("Game is over, ignoring click");
+      toast({
+        title: "Game Over",
+        description: "Start a new round to continue playing.",
+      });
       return;
     }
     
@@ -56,7 +59,10 @@ export const useGameActions = ({
       
       // Make sure gridCells and the row exist
       if (!gridCells || !gridCells[row]) {
-        console.log("gridCells or row doesn't exist", { gridCellsExists: !!gridCells, rowLength: gridCells?.length });
+        toast({
+          title: "System Error",
+          description: "There was a problem with the game grid. Please try again.",
+        });
         return;
       }
       
@@ -70,30 +76,48 @@ export const useGameActions = ({
         });
         return;
       }
+
+      // Check if player has already claimed a cell in this round
+      if (gameState.playerClaimed) {
+        toast({
+          title: "Already Claimed",
+          description: "You've already claimed a cell in this round.",
+        });
+        return;
+      }
+
+      if (gameState.walletBalance < 2000) {
+        toast({
+          title: "Insufficient Gold",
+          description: "You need at least 2,000 gold to claim a cell.",
+        });
+        return;
+      }
       
       setClaimTarget({col, row});
       setActiveModal("claim");
       return;
     } 
     
-    if (gameState.phase === 'play' && player) {
-      console.log("In play phase, checking if player can move to clicked cell", player);
-      
+    if (gameState.phase === 'play') {
+      if (!player) {
+        toast({
+          title: "No Player Position",
+          description: "You need to claim a cell first to play.",
+        });
+        return;
+      }
+
       // Check if the clicked cell is adjacent to the player
       const dx = Math.abs(col - player.col);
       const dy = Math.abs(row - player.row);
-      console.log("Distance check - dx:", dx, "dy:", dy);
       
       // Check if clicked cell is adjacent (one step horizontally OR vertically, not both)
       if ((dx === 1 && dy === 0) || (dx === 0 && dy === 1)) {
-        console.log("Cell is adjacent, checking for walls");
-        
         // Check if there's a wall between the current and target cells
         const canMove = checkWall(player.col, player.row, col, row);
-        console.log("Can move:", canMove);
         
         if (!canMove) {
-          console.log("Wall detected, cannot move");
           toast({
             title: "Can't Move There",
             description: "There's a wall in the way!",
@@ -101,15 +125,18 @@ export const useGameActions = ({
           return;
         }
         
-        console.log("No wall detected, moving player to:", col, row);
         movePlayerToCell(col, row);
       } else {
-        console.log("Cell is not adjacent to player", dx, dy);
         toast({
           title: "Invalid Move",
           description: "You can only move to adjacent cells.",
         });
       }
+    } else {
+      toast({
+        title: "Wrong Phase",
+        description: `You can't perform this action during the ${gameState.phase} phase.`,
+      });
     }
   }, [gameState, player, maze, gridCells, setClaimTarget, setActiveModal, movePlayerToCell, toast]);
 
