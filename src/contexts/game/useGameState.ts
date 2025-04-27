@@ -16,7 +16,7 @@ const defaultGameState: GameStateType = {
   phase: "claim",
   score: 0,
   highScore: 0,
-  walletBalance: 1224, // Updated starting balance to 1,224 gold coins
+  walletBalance: 3224, // Updated starting balance to 3,224 gold coins
   totalProfit: 0,
   totalLoss: 0,
   playerNickname: "",
