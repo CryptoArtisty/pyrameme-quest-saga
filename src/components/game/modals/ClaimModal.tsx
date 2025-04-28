@@ -44,12 +44,9 @@ export const ClaimModal = () => {
       const success = await claimCell(nickname, initials);
       console.log("Claim result:", success ? "SUCCESS" : "FAILED");
       
-      if (success) {
-        // Modal will be closed automatically by claimCell function
-      }
+      // Modal will be closed by claimCell if successful
     } catch (error) {
       console.error('Error claiming cell:', error);
-    } finally {
       setIsSubmitting(false);
     }
   };
