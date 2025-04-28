@@ -24,9 +24,18 @@
 
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import tsconfigPaths from 'vite-tsconfig-paths'
 
+// https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react()],
-  base: '', // <-- Empty string for root hosting!
+  base: '', // Deploy from root (for Vercel / GH Pages if needed)
+  server: {
+    host: "::",
+    port: 8080,
+  },
+  plugins: [
+    react(),
+    tsconfigPaths()
+  ],
 })
 
