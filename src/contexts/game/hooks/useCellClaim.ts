@@ -9,7 +9,9 @@ interface UseCellClaimProps {
   setGridCells: (cells: React.SetStateAction<GridCell[][]>) => void;
   setClaimTarget: (target: { col: number; row: number } | null) => void;
   setActiveModal: (modal: string | null) => void;
-  setPlayer: (player: { col: number; row: number; hasClaimed?: boolean; hasClaimedEver?: boolean } | null) => void;
+  setPlayer: (
+    player: { col: number; row: number; hasClaimed?: boolean; hasClaimedEver?: boolean } | null
+  ) => void;
   toast: any;
 }
 
@@ -20,100 +22,69 @@ export const useCellClaim = ({
   setClaimTarget,
   setActiveModal,
   setPlayer,
-  toast
+  toast,
 }: UseCellClaimProps) => {
-  const claimCell = async (nickname: string, initials: string): Promise<boolean> => {
+  const claimCell = async (): Promise<boolean> => {
     const target = gameState.claimTarget;
     if (!target) {
-      console.error("No claim target set");
-      toast({
-        title: "Error",
-        description: "No cell selected to claim",
-      });
+      console.error('No claim target set');
+      toast({ title: 'Error', description: 'No cell selected.' });
       return false;
     }
-    
+
+    const { col, row } = target;
+    const isEdge = row === 0 || row === 14 || col === 0 || col === 14;
+    const cost = isEdge ? 20000 : 2000;
+
+    if (gameState.walletBalance < cost) {
+      toast({ title: 'Insufficient Funds', description: `Need ${cost} gold.` });
+      setActiveModal('buy');
+      return false;
+    }
+
     try {
-      const { col, row } = target;
-      console.log("Claiming cell at:", col, row);
-      
-      // Check if the cell is on the edge of the grid
-      const isEdge = row === 0 || row === 14 || col === 0 || col === 14;
-      // Edge cells cost 20,000 gold, other cells cost 2,000 gold
-      const cost = isEdge ? 20000 : 2000;
-      
-      if (gameState.walletBalance < cost) {
-        toast({
-          title: "Insufficient Funds",
-          description: `You need ${cost} gold to claim this cell.`,
-        });
-        setActiveModal("buy");
-        return false;
-      }
-      
-      // Process the cell claim payment distribution
-      const { treasuryAmount, developerAmount } = processCellClaim(cost);
-      
-      // Update game state with new balance and player info
-      setGameState(prev => ({
+      // payment splits
+      const { developerAmount } = processCellClaim(cost);
+
+      // deduct cost and mark claimed by account
+      setGameState((prev) => ({
         ...prev,
         walletBalance: prev.walletBalance - cost,
         totalLoss: prev.totalLoss + cost,
-        playerNickname: nickname,
-        playerInitials: initials,
-        playerClaimed: true
+        playerClaimed: true,
+        playerNickname: prev.playerAccount,   // record address
+        playerInitials: '',                   // clear initials
       }));
-      
-      // Update grid cells with claimed cell
-      setGridCells(prevCells => {
-        const newCells = JSON.parse(JSON.stringify(prevCells)); // Deep copy
-        
-        // Ensure the row exists
-        if (!newCells[row]) {
-          newCells[row] = [];
-        }
-        
-        // Set the cell owner and nickname
+
+      // paint the grid cell
+      setGridCells((prev) => {
+        const newCells = JSON.parse(JSON.stringify(prev)) as GridCell[][];
+        newCells[row] = newCells[row] || [];
         newCells[row][col] = {
-          ...newCells[row]?.[col],
+          ...newCells[row][col],
           owner: gameState.playerAccount || 'local-player',
-          nickname: initials
+          nickname: gameState.playerAccount || '',
         };
-        
-        console.log("Updated grid cells:", newCells);
         return newCells;
       });
 
-      // Set the player position immediately
-      console.log("Setting player to claimed position:", { col, row, hasClaimed: true });
-      setPlayer({ 
-        col, 
-        row,
-        hasClaimed: true,
-        hasClaimedEver: true
-      });
-      
-      // Close modal immediately after successful claim
+      // move player marker
+      setPlayer({ col, row, hasClaimed: true, hasClaimedEver: true });
+
+      // close the modal
       setClaimTarget(null);
       setActiveModal(null);
-      
-      // Show success notification
+
       toast({
-        title: "Cell Claimed!",
-        description: `You've successfully claimed this cell for ${cost} gold.`,
+        title: 'Cell Claimed!',
+        description: `Claimed for ${cost} gold.`,
       });
-      
-      // In a real implementation, this would trigger a blockchain transaction
-      console.log(`Sent ${developerAmount} gold to developer account: ${DEVELOPER_ACCOUNT}`);
-      console.log(`Player token placed at position: col=${col}, row=${row}`);
-      
+
+      console.log(`Developer got ${developerAmount} gold: ${DEVELOPER_ACCOUNT}`);
       return true;
     } catch (error) {
-      console.error("Error claiming cell:", error);
-      toast({
-        title: "Claim Failed",
-        description: "Could not claim the cell. Please try again.",
-      });
+      console.error('Error claiming cell:', error);
+      toast({ title: 'Claim Failed', description: 'Try again.' });
       return false;
     }
   };
