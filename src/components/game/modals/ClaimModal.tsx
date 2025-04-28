@@ -17,7 +17,7 @@ export const ClaimModal = () => {
   const [initials, setInitials] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // FIXED: Reset form when modal is opened
+  // Reset form when modal is opened
   React.useEffect(() => {
     if (activeModal === 'claim') {
       setNickname('');
@@ -42,10 +42,10 @@ export const ClaimModal = () => {
     
     try {
       const success = await claimCell(nickname, initials);
-      console.log("Claim result:", success);
+      console.log("Claim result:", success ? "SUCCESS" : "FAILED");
       
       if (success) {
-        showModal(null);
+        // Modal will be closed automatically by claimCell function
       }
     } catch (error) {
       console.error('Error claiming cell:', error);
