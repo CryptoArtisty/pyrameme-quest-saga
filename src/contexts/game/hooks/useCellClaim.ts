@@ -1,7 +1,7 @@
-
 import { GameStateType } from '../types';
 import { GridCell } from '@/types/game';
 import { processCellClaim, DEVELOPER_ACCOUNT } from '@/lib/goldEconomy';
+import React from 'react';
 
 interface UseCellClaimProps {
   gameState: GameStateType;
@@ -24,8 +24,8 @@ export const useCellClaim = ({
   setPlayer,
   toast,
 }: UseCellClaimProps) => {
-  const claimCell = async (): Promise<boolean> => {
-    const target = gameState.claimTarget;
+  // Now accepts the selected cell as an argument
+  const claimCell = async (target?: { col: number; row: number }): Promise<boolean> => {
     if (!target) {
       console.error('No claim target set');
       toast({ title: 'Error', description: 'No cell selected.' });
@@ -46,14 +46,14 @@ export const useCellClaim = ({
       // payment splits
       const { developerAmount } = processCellClaim(cost);
 
-      // deduct cost and mark claimed by account
+      // deduct cost and record claim under the player's WAX account
       setGameState((prev) => ({
         ...prev,
         walletBalance: prev.walletBalance - cost,
         totalLoss: prev.totalLoss + cost,
         playerClaimed: true,
-        playerNickname: prev.playerAccount,   // record address
-        playerInitials: '',                   // clear initials
+        playerNickname: prev.playerAccount,    // record WAX address as nickname
+        playerInitials: '',                    // clear initials
       }));
 
       // paint the grid cell
@@ -71,7 +71,7 @@ export const useCellClaim = ({
       // move player marker
       setPlayer({ col, row, hasClaimed: true, hasClaimedEver: true });
 
-      // close the modal
+      // close the modal & clear target
       setClaimTarget(null);
       setActiveModal(null);
 

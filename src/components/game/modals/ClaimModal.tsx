@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useGame } from '@/contexts/game/GameContext';
 import { Button } from '@/components/ui/button';
@@ -30,8 +29,9 @@ export const ClaimModal = () => {
     if (!claimTarget) return;
     setIsSubmitting(true);
     try {
-      const success = await claimCell();      // <-- no args now
-      if (!success) setIsSubmitting(false);   // keep form open on failure
+      // pass the selected cell into claimCell
+      const success = await claimCell(claimTarget);
+      if (!success) setIsSubmitting(false);
     } catch {
       setIsSubmitting(false);
     }
