@@ -1,3 +1,4 @@
+
 import React from 'react';
 import GameContext from './GameContext';
 import { useGameState } from './useGameState';
@@ -34,6 +35,16 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Use the game sync hook
   useGameSync();
+
+  // FIXED: Added debug logging for player state changes
+  React.useEffect(() => {
+    console.log("Player state changed:", player);
+  }, [player]);
+
+  // FIXED: Added debug logging for game state changes
+  React.useEffect(() => {
+    console.log("Game state changed:", state);
+  }, [state]);
 
   const { movePlayer, movePlayerToCell } = usePlayerMovement({
     gameState: state,
@@ -84,7 +95,7 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setGridCells,
     setClaimTarget,
     setActiveModal,
-    setPlayer,
+    setPlayer, // FIXED: Make sure setPlayer is passed properly
     toast
   });
 

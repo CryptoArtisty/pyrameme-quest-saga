@@ -17,16 +17,33 @@ export const ClaimModal = () => {
   const [initials, setInitials] = React.useState('');
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
+  // FIXED: Reset form when modal is opened
+  React.useEffect(() => {
+    if (activeModal === 'claim') {
+      setNickname('');
+      setInitials('');
+      setIsSubmitting(false);
+    }
+  }, [activeModal]);
+
   const handleClaim = async () => {
-    if (!claimTarget) return;
+    if (!claimTarget) {
+      console.error("No claim target set");
+      return;
+    }
     
     if (!nickname.trim() || !initials.trim()) {
+      console.error("Nickname or initials missing");
       return; // Button is disabled in this case
     }
 
     setIsSubmitting(true);
+    console.log("Attempting to claim cell with:", {nickname, initials, target: claimTarget});
+    
     try {
       const success = await claimCell(nickname, initials);
+      console.log("Claim result:", success);
+      
       if (success) {
         showModal(null);
       }

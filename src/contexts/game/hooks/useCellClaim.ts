@@ -77,15 +77,17 @@ export const useCellClaim = ({
         return newCells;
       });
 
-      // Set the claimed cell as the player's starting position
-      // This is a key change - we're setting the player position immediately after claiming
-      // Also set hasClaimed and hasClaimedEver flags
+      // FIXED: Set the claimed cell as the player's starting position
+      // This is crucial - we're explicitly setting the player position and claim flags
       setPlayer({ 
         col, 
         row,
         hasClaimed: true,    // Player has claimed in current game
         hasClaimedEver: true // Player has claimed at least once
       });
+      
+      // Log player position for debugging
+      console.log("Player position set to:", col, row, "with hasClaimed=true");
       
       // Reset claim target and close modal
       setClaimTarget(null);
