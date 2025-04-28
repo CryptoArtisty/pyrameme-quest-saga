@@ -77,7 +77,7 @@ export const useCellClaim = ({
         return newCells;
       });
 
-      // Set the player position BEFORE closing modal or any other actions
+      // Set the player position immediately
       console.log("Setting player to claimed position:", { col, row, hasClaimed: true });
       setPlayer({ 
         col, 
@@ -86,16 +86,15 @@ export const useCellClaim = ({
         hasClaimedEver: true
       });
       
-      // After player is set, reset claim target and close modal
-      setTimeout(() => {
-        setClaimTarget(null);
-        setActiveModal(null);
-        
-        toast({
-          title: "Cell Claimed!",
-          description: `You've successfully claimed this cell for ${cost} gold.`,
-        });
-      }, 50);
+      // Close modal immediately after successful claim
+      setClaimTarget(null);
+      setActiveModal(null);
+      
+      // Show success notification
+      toast({
+        title: "Cell Claimed!",
+        description: `You've successfully claimed this cell for ${cost} gold.`,
+      });
       
       // In a real implementation, this would trigger a blockchain transaction
       console.log(`Sent ${developerAmount} gold to developer account: ${DEVELOPER_ACCOUNT}`);

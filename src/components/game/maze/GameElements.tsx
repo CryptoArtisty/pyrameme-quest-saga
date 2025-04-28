@@ -55,13 +55,13 @@ export const GameElements = ({ treasures, exitCell, player, cellSize, ctx, hintP
   if (player) {
     console.log("Drawing player at:", player);
     
-    // Always draw the player regardless of claim status
+    // Add glow effect
     ctx.shadowColor = "rgba(255,0,0,0.6)";
     ctx.shadowBlur = 10;
     
-    // Use player's hasClaimed status to determine color, with fallbacks
-    const hasClaimedCurrently = player.hasClaimed !== undefined ? player.hasClaimed : false;
-    ctx.fillStyle = hasClaimedCurrently ? "#ea384c" : "#8E9196";
+    // Use player's hasClaimed status to determine color
+    const playerColor = player.hasClaimed ? "#ea384c" : "#8E9196";
+    ctx.fillStyle = playerColor;
     
     ctx.beginPath();
     ctx.arc(
@@ -73,6 +73,7 @@ export const GameElements = ({ treasures, exitCell, player, cellSize, ctx, hintP
     );
     ctx.fill();
     
+    // Reset shadow effect
     ctx.shadowColor = "transparent";
     ctx.shadowBlur = 0;
   } else {
