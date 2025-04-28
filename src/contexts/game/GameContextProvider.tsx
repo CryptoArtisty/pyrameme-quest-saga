@@ -36,15 +36,24 @@ export const GameProvider: React.FC<{ children: React.ReactNode }> = ({ children
   // Use the game sync hook
   useGameSync();
 
-  // Debug logging for player state changes
+  // Debug logging for player state changes with more details
   React.useEffect(() => {
-    console.log("Player state changed:", player);
+    console.log("Player state changed:", player, 
+      player ? `Position: (${player.col}, ${player.row}), hasClaimed: ${player.hasClaimed}` : "No player");
   }, [player]);
 
   // Debug logging for game state changes
   React.useEffect(() => {
     console.log("Game state changed:", state);
+    if (state.claimTarget) {
+      console.log("Claim target set:", state.claimTarget);
+    }
   }, [state]);
+
+  // Debug logging for modal changes
+  React.useEffect(() => {
+    console.log("Active modal changed:", activeModal);
+  }, [activeModal]);
 
   const { movePlayer, movePlayerToCell } = usePlayerMovement({
     gameState: state,

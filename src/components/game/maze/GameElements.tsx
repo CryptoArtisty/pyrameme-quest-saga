@@ -53,14 +53,14 @@ export const GameElements = ({ treasures, exitCell, player, cellSize, ctx, hintP
 
   // Draw player
   if (player) {
-    console.log("Drawing player at:", player);
+    console.log("Drawing player at:", player, "hasClaimed:", player.hasClaimed);
     
     // Add glow effect
     ctx.shadowColor = "rgba(255,0,0,0.6)";
     ctx.shadowBlur = 10;
     
-    // Use player's hasClaimed status to determine color
-    const playerColor = player.hasClaimed ? "#ea384c" : "#8E9196";
+    // Use player's hasClaimed status to determine color with a definite fallback
+    const playerColor = player.hasClaimed === true ? "#ea384c" : "#8E9196";
     ctx.fillStyle = playerColor;
     
     ctx.beginPath();

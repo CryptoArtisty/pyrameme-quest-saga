@@ -41,8 +41,13 @@ export const ClaimModal = () => {
     console.log("Attempting to claim cell with:", {nickname, initials, target: claimTarget});
     
     try {
-      await claimCell(nickname, initials);
-      // Modal is closed by claimCell on success, no need to handle closure here
+      const success = await claimCell(nickname, initials);
+      console.log("Claim result:", success ? "SUCCESS" : "FAILED");
+      
+      // Only reset submission state if claim failed (modal will be closed on success)
+      if (!success) {
+        setIsSubmitting(false);
+      }
     } catch (error) {
       console.error('Error claiming cell:', error);
       setIsSubmitting(false);
@@ -86,6 +91,7 @@ export const ClaimModal = () => {
               onChange={(e) => setNickname(e.target.value)}
               maxLength={20}
               placeholder="Enter your nickname"
+              disabled={isSubmitting}
             />
           </div>
           <div className="space-y-2">
@@ -99,6 +105,7 @@ export const ClaimModal = () => {
               onChange={(e) => setInitials(e.target.value.substring(0, 2))}
               maxLength={2}
               placeholder="AB"
+              disabled={isSubmitting}
             />
           </div>
         </div>

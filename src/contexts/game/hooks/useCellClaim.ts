@@ -24,7 +24,14 @@ export const useCellClaim = ({
 }: UseCellClaimProps) => {
   const claimCell = async (nickname: string, initials: string): Promise<boolean> => {
     const target = gameState.claimTarget;
-    if (!target) return false;
+    if (!target) {
+      console.error("No claim target set");
+      toast({
+        title: "Error",
+        description: "No cell selected to claim",
+      });
+      return false;
+    }
     
     try {
       const { col, row } = target;
@@ -105,7 +112,7 @@ export const useCellClaim = ({
       console.error("Error claiming cell:", error);
       toast({
         title: "Claim Failed",
-        description: "Could not claim the cell.",
+        description: "Could not claim the cell. Please try again.",
       });
       return false;
     }
