@@ -88,5 +88,8 @@
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1",
     "vite-tsconfig-paths": "^4.3.0"
+    "@eosdacio/ual-wax": "^1.0.0",
+    "ual-reactjs-renderer": "^1.0.0",
+    "ual-anchor": "^1.0.0"
   }
 }
