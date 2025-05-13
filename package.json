@@ -63,7 +63,10 @@
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
     "vaul": "^0.9.3",
-    "zod": "^3.23.8"
+    "zod": "^3.23.8",
+    "@waxio/waxjs": "^1.7.0",
+    "anchor-link": "^2.0.0",
+    "anchor-link-browser-transport": "^3.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.0",
@@ -85,5 +88,8 @@
     "typescript-eslint": "^8.0.1",
     "vite": "^5.4.1",
     "vite-tsconfig-paths": "^4.3.0"
+    "@eosdacio/ual-wax": "^1.0.0",
+    "ual-reactjs-renderer": "^1.0.0",
+    "ual-anchor": "^1.0.0"
   }
 }

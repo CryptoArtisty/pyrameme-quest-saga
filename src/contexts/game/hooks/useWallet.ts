@@ -1,142 +1,79 @@
+import { useState, useEffect, useCallback } from 'react';
+import { UALProvider } from 'ual-reactjs-renderer';
+import { Wax } from '@eosdacio/ual-wax';
+import { Anchor } from 'ual-anchor';
+import { useGame } from './useGame';
 
-
-import { useCallback } from 'react';
-import { GameStateType } from '../types';
-import { convertGoldToPgl } from '@/lib/goldEconomy';
-
-interface UseWalletProps {
-  isWalletConnected: boolean;
-  gameState: GameStateType;  // Added gameState to the props
-  setIsWalletConnected: (connected: boolean) => void;
-  setGameState: (state: React.SetStateAction<GameStateType>) => void;
-  toast: any;
-}
-
-export const useWallet = ({
-  isWalletConnected,
-  gameState,  // Receive gameState as a prop
-  setIsWalletConnected,
-  setGameState,
-  toast
-}: UseWalletProps) => {
-  const connectWallet = useCallback(async (): Promise<boolean> => {
-    try {
-      toast({
-        title: "Connecting Wallet...",
-        description: "Please approve the connection request in your wallet.",
-      });
-      
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setIsWalletConnected(true);
-      setGameState(prev => ({
-        ...prev,
-        playerWaxWallet: "waxwallet.example",
-        playerAccount: "example.wam"
-      }));
-      
-      toast({
-        title: "Wallet Connected",
-        description: "Successfully connected to your WAX wallet.",
-      });
-      
-      return true;
-    } catch (error) {
-      toast({
-        title: "Connection Failed",
-        description: "Could not connect to WAX wallet.",
-      });
-      return false;
-    }
-  }, [setIsWalletConnected, setGameState, toast]);
-
-  const buyPgl = useCallback(async (amount: number, currency: 'pgl' | 'wax' = 'pgl'): Promise<boolean> => {
-    try {
-      if (!isWalletConnected) {
-        toast({
-          title: "Wallet Not Connected",
-          description: "Please connect your WAX wallet first.",
-        });
-        return false;
-      }
-      
-      const goldAmount = currency === 'pgl' ? amount * 1000 : amount * 5000;
-      
-      toast({
-        title: "Processing Transaction...",
-        description: `Sending ${amount} ${currency.toUpperCase()} to buy ${goldAmount} gold`,
-      });
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setGameState(prev => ({
-        ...prev,
-        walletBalance: prev.walletBalance + goldAmount
-      }));
-      
-      toast({
-        title: "Transaction Complete",
-        description: `Successfully purchased ${goldAmount} gold!`,
-      });
-      
-      return true;
-    } catch (error) {
-      toast({
-        title: "Transaction Failed",
-        description: "Could not complete the gold purchase.",
-      });
-      return false;
-    }
-  }, [isWalletConnected, setGameState, toast]);
-
-  const convertGoldToPGL = useCallback(async (goldAmount: number): Promise<boolean> => {
-    try {
-      if (!isWalletConnected) {
-        toast({
-          title: "Wallet Not Connected",
-          description: "Please connect your WAX wallet first.",
-        });
-        return false;
-      }
-      
-      if (gameState.walletBalance < goldAmount) {
-        toast({
-          title: "Insufficient Funds",
-          description: `You need ${goldAmount} gold to convert to PGL.`,
-        });
-        return false;
-      }
-      
-      const pglAmount = convertGoldToPgl(goldAmount);
-      
-      toast({
-        title: "Processing Conversion...",
-        description: `Converting ${goldAmount} gold to ${pglAmount} PGL`,
-      });
-      
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      setGameState(prev => ({
-        ...prev,
-        walletBalance: prev.walletBalance - goldAmount
-      }));
-      
-      toast({
-        title: "Conversion Complete",
-        description: `Successfully converted ${goldAmount} gold to ${pglAmount} PGL! The PGL has been sent to your wallet.`,
-      });
-      
-      return true;
-    } catch (error) {
-      toast({
-        title: "Conversion Failed",
-        description: "Could not complete the gold to PGL conversion.",
-      });
-      return false;
-    }
-  }, [isWalletConnected, gameState.walletBalance, setGameState, toast]);
-
-  return { connectWallet, buyPgl, convertGoldToPGL };
+// WAX Testnet Configuration
+const WAX_CONFIG = {
+  chainId: 'f16b1833c747c43682f4386fca9cbb327929334a762755ebec17f6f23c9b8a12',
+  rpcEndpoint: 'https://testnet.waxsweden.org',
+  appName: 'Pyrameme Quest Saga'
 };
 
+export const useWallet = () => {
+  const { dispatch } = useGame();
+  const [accountName, setAccountName] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  // Initialize WAX connection
+  useEffect(() => {
+    const wax = new Wax([{
+      chainId: WAX_CONFIG.chainId,
+      rpcEndpoints: [{ 
+        protocol: 'https', 
+        host: WAX_CONFIG.rpcEndpoint.replace('https://', ''), 
+        port: 443 
+      }]
+    }], { appName: WAX_CONFIG.appName });
+
+    const anchor = new Anchor([{
+      chainId: WAX_CONFIG.chainId,
+      rpcEndpoints: [{ 
+        protocol: 'https', 
+        host: WAX_CONFIG.rpcEndpoint.replace('https://', ''), 
+        port: 443 
+      }]
+    }], { appName: WAX_CONFIG.appName });
+
+    const provider = new UALProvider({
+      chains: [{
+        chainId: WAX_CONFIG.chainId,
+        rpcEndpoints: [{ 
+          protocol: 'https', 
+          host: WAX_CONFIG.rpcEndpoint.replace('https://', ''), 
+          port: 443 
+        }]
+      }],
+      authenticators: [wax, anchor],
+      appName: WAX_CONFIG.appName
+    });
+
+    window.waxProvider = provider;
+  }, []);
+
+  const connect = useCallback(async () => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const users = await window.waxProvider?.login();
+      if (users?.[0]) {
+        setAccountName(users[0].accountName);
+        dispatch({ type: 'SET_WALLET', payload: users[0].accountName });
+      }
+    } catch (err) {
+      setError('Failed to connect. Install WAX Cloud Wallet or Anchor.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [dispatch]);
+
+  const disconnect = useCallback(async () => {
+    await window.waxProvider?.logout();
+    setAccountName(null);
+    dispatch({ type: 'SET_WALLET', payload: null });
+  }, [dispatch]);
+
+  return { accountName, isLoading, error, connect, disconnect };
+};

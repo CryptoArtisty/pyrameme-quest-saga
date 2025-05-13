@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useGame } from '@/contexts/game/GameContext';
 import { Button } from '@/components/ui/button';
@@ -15,7 +14,7 @@ export const ClaimModal = () => {
   const { activeModal, showModal, claimTarget, claimCell, gameState } = useGame();
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // Calculate cost same as before
+  // Compute cost based on edge vs interior
   const getCost = () => {
     if (!claimTarget) return 2000;
     const { col, row } = claimTarget;
@@ -30,8 +29,9 @@ export const ClaimModal = () => {
     if (!claimTarget) return;
     setIsSubmitting(true);
     try {
-      const success = await claimCell();      // <-- no args now
-      if (!success) setIsSubmitting(false);   // keep form open on failure
+      // Pass the exact cell to the hook
+      const success = await claimCell(claimTarget);
+      if (!success) setIsSubmitting(false);
     } catch {
       setIsSubmitting(false);
     }
@@ -40,7 +40,7 @@ export const ClaimModal = () => {
   return (
     <Dialog
       open={activeModal === 'claim'}
-      onOpenChange={(open) => !open && showModal(null)}
+      onOpenChange={open => !open && showModal(null)}
     >
       <DialogContent className="bg-dark text-gold border-gold">
         <DialogHeader>
@@ -54,7 +54,6 @@ export const ClaimModal = () => {
             )}
           </DialogDescription>
         </DialogHeader>
-
         <DialogFooter>
           <Button
             variant="outline"

@@ -1,18 +1,23 @@
-
+import React from 'react';
 import { GameStateType } from '../types';
 import { GridCell } from '@/types/game';
 import { processCellClaim, DEVELOPER_ACCOUNT } from '@/lib/goldEconomy';
 
 interface UseCellClaimProps {
   gameState: GameStateType;
-  setGameState: (state: React.SetStateAction<GameStateType>) => void;
-  setGridCells: (cells: React.SetStateAction<GridCell[][]>) => void;
-  setClaimTarget: (target: { col: number; row: number } | null) => void;
-  setActiveModal: (modal: string | null) => void;
-  setPlayer: (
-    player: { col: number; row: number; hasClaimed?: boolean; hasClaimedEver?: boolean } | null
-  ) => void;
-  toast: any;
+  setGameState: React.Dispatch<React.SetStateAction<GameStateType>>;
+  setGridCells: React.Dispatch<React.SetStateAction<GridCell[][]>>;
+  setClaimTarget: React.Dispatch<React.SetStateAction<{ col: number; row: number } | null>>;
+  setActiveModal: React.Dispatch<React.SetStateAction<string | null>>;
+  setPlayer: React.Dispatch<
+    React.SetStateAction<{
+      col: number;
+      row: number;
+      hasClaimed?: boolean;
+      hasClaimedEver?: boolean;
+    } | null>
+  >;
+  toast: (opts: { title: string; description: string }) => void;
 }
 
 export const useCellClaim = ({
@@ -24,8 +29,8 @@ export const useCellClaim = ({
   setPlayer,
   toast,
 }: UseCellClaimProps) => {
-  const claimCell = async (): Promise<boolean> => {
-    const target = gameState.claimTarget;
+  // Now accepts the selected cell as an argument
+  const claimCell = async (target?: { col: number; row: number }): Promise<boolean> => {
     if (!target) {
       console.error('No claim target set');
       toast({ title: 'Error', description: 'No cell selected.' });
@@ -43,43 +48,38 @@ export const useCellClaim = ({
     }
 
     try {
-      // payment splits
+      // Split the payment
       const { developerAmount } = processCellClaim(cost);
 
-      // deduct cost and mark claimed by account
-      setGameState((prev) => ({
+      // Deduct cost & tag claim with WAX address
+      setGameState(prev => ({
         ...prev,
         walletBalance: prev.walletBalance - cost,
         totalLoss: prev.totalLoss + cost,
         playerClaimed: true,
-        playerNickname: prev.playerAccount,   // record address
-        playerInitials: '',                   // clear initials
+        playerNickname: prev.playerAccount,
+        playerInitials: '',
       }));
 
-      // paint the grid cell
-      setGridCells((prev) => {
-        const newCells = JSON.parse(JSON.stringify(prev)) as GridCell[][];
-        newCells[row] = newCells[row] || [];
-        newCells[row][col] = {
-          ...newCells[row][col],
+      // Update the grid immutably
+      setGridCells(prev => {
+        const newRow = [...prev[row]];
+        newRow[col] = {
+          ...newRow[col],
           owner: gameState.playerAccount || 'local-player',
           nickname: gameState.playerAccount || '',
         };
-        return newCells;
+        return prev.map((r, i) => (i === row ? newRow : r));
       });
 
-      // move player marker
+      // Move the player marker
       setPlayer({ col, row, hasClaimed: true, hasClaimedEver: true });
 
-      // close the modal
+      // Close modal & clear target
       setClaimTarget(null);
       setActiveModal(null);
 
-      toast({
-        title: 'Cell Claimed!',
-        description: `Claimed for ${cost} gold.`,
-      });
-
+      toast({ title: 'Cell Claimed!', description: `Claimed for ${cost} gold.` });
       console.log(`Developer got ${developerAmount} gold: ${DEVELOPER_ACCOUNT}`);
       return true;
     } catch (error) {
